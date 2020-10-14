@@ -1,1 +1,1 @@
-![alt text](https://github.com/ADIMADE/Labirinto/issues/1)
+![Labirinto_Logo](Labirinto\ Logo.jpg)
