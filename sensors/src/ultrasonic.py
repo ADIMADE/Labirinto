@@ -21,12 +21,12 @@ class Ultrasonic():
         #self.triggerPin = rospy.get_param(ultrasonicName)
         #self.echoPin = rospy.get_param(ultrasonicName)
 
-        self.triggerPin =
-        self.echoPin =
+        self.triggerPin = 11
+        self.echoPin = 13
 
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.triggerPin)
-        GPIO.setup(self.echoPin)
+        GPIO.setup(self.triggerPin, GPIO.OUT)
+        GPIO.setup(self.echoPin, GPIO.IN)
 
         #Publisher
         self.stringPubName = 'ultrasonic' +ultrasonicName
@@ -39,22 +39,22 @@ class Ultrasonic():
         while not rospy.is_shutdown():
             for i in range(len(ultrasonicArray)):
                 # initialize input to triggerPin
-                GPIO.output(ultrasonicArray.triggerPin, False)
+                GPIO.output(ultrasonicArray[i].triggerPin, False)
                 time.sleep(0.1)
-                GPIO.output(ultrasonicArray.triggerPin, True)
+                GPIO.output(ultrasonicArray[i].triggerPin, True)
                 time.sleep(0.00001)
-                GPIO.output(ultrasonicArray.triggerPin, False)
+                GPIO.output(ultrasonicArray[i].triggerPin, False)
 
                 # start timer while ultrasonic waves are sent
                 while GPIO.input(ultrasonicArray.echoPin) == 0:
-                    pulse_start = time.time()
+                   ultrasonicArray[i]. pulse_start = time.time()
                 # stop timer when ultrasonic waves are received
                 while GPIO.input(ultrasonicArray.echoPin) == 1:
-                    pulse_end = time.time()
+                   ultrasonicArray[i].pulse_end = time.time()
 
                 # calculation of distance with half speed of sound (17'320cm/s) at 25 degree
-                pulse_duration = pulse_end - pulse_start
-                ultrasonicArray[i].distance = pulse_duration * 17320
+                ultrasonicArray[i].pulse_duration = ultrasonicArray[i].pulse_end - ultrasonicArray[i].pulse_start
+                ultrasonicArray[i].distance = ultrasonicArray[i].pulse_duration * 17320
 
                 rospy.loginfo(ultrasonicArray[i].distance)
 
