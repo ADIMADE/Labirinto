@@ -14,6 +14,9 @@ class Ultrasonic():
     # constructor of the class Ultrasonic
     def __init__(self, ultrasonicName):
 
+        # Attribute : distance
+        self.distance = 0
+
         #Get the GPIO pin of the trigger and echo pin in the ROS parameter server
         #self.triggerPin = rospy.get_param(ultrasonicName)
         #self.echoPin = rospy.get_param(ultrasonicName)
@@ -51,7 +54,9 @@ class Ultrasonic():
 
                 # calculation of distance with half speed of sound (17'320cm/s) at 25 degree
                 pulse_duration = pulse_end - pulse_start
-                distance = pulse_duration * 17320
+                ultrasonicArray[i].distance = pulse_duration * 17320
+
+                rospy.loginfo(ultrasonicArray[i].distance)
 
     run = staticmethod(run)
 
