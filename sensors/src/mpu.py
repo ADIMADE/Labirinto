@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import time
-import smbus
+from smbus2 import SMBus
 import math
 from std_msgs.msg import Int64
 import rospy
@@ -28,7 +28,7 @@ class MpuAxis:
 	FS_SEL3 = 16.4
 	address = 0x68
 	# I2C Parameters
-	bus = smbus.SMBus(1)
+	bus = SMBus(1)
 	bus.write_byte_data(address, power_mgmt_1, 0)
 	bus.write_byte_data(address, gyro_config, 0x18)
 
@@ -37,7 +37,8 @@ class MpuAxis:
 	def __init__(self, axis):
 
 		# Get the I2C Adress of Axis in the ROS Parameter Server
-		self.axisAdress = rospy.get_param(axis)
+                # self.axisAdress = rospy.get_param(axis)
+		self.axisAdress = 0x47
 
 		# Publisher and Rate
 		self.stringPubName = 'mpu_' + axis
@@ -63,7 +64,7 @@ class MpuAxis:
 	# Method : read filtered word of I2C bus
 	def read_word_2c(self, reg):
 
-		val = MpuAxis.read_word(reg)
+		val = MpuAxis.read_word(self,reg)
 		if val >= 0x8000:
 			return -((65535 - val) + 1)
 		else:
@@ -75,7 +76,7 @@ class MpuAxis:
 		while not rospy.is_shutdown():
 			self.axisSpeed = self.read_word_2c(self.axisAdress) / MpuAxis.FS_SEL3
 			self.pub.publish(self.axisSpeed)
-			# rospy.loginfo(self.axisSpeed)
+			rospy.loginfo(self.axisSpeed)
 			self.rate.sleep()
 			
 

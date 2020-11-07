@@ -6,76 +6,76 @@ from std_msgs.msg import Int64
 from std_msgs.msg import Bool
 
 
-
-#------------------- Class ---------------------
-
+# ------------------- Class ---------------------
 
 
 # Class Encoder : for every encoder input
 class Encoder():
 
+    # constructor of Class Encoder
+  def __init__(self, encoderName):
 
-	# constructor of Class Encoder
-	def __init__(self, encoderName):
+        # Attribute : counter for increments
+        self.counter = 0
 
-		# Attribute : counter for increments
-		self.counter = 0
+        # Get the GPIO Pin of Encoder in the ROS Parameter Server
+        # self.encoderPin = rospy.get_param(encoderName)
+        self.encoderPin = 7
 
-		# Get the GPIO Pin of Encoder in the ROS Parameter Server
-		self.encoderPin = rospy.get_param(encoderName)
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(self.encoderPin, GPIO.IN)
 
-		GPIO.setmode(GPIO.BOARD)
-		GPIO.setup(self.encoderPin, GPIO.IN)
+        # Publisher and Suscriber
+        self.stringPubName = 'encoder' + encoderName
+        self.pub = rospy.Publisher(self.stringPubName, Int64, queue_size=10)
+        self.resetSuscriber = rospy.Subscriber('encoderReset', Bool, self.reset)
 
-		# Publisher and Suscriber
-		self.stringPubName = 'encoder' + self.encoderName
-		self.pub = rospy.Publisher(self.stringPubName, Int64, queue_size = 10)
-		self.resetSuscriber = rospy('encoderReset', Bool, self.reset)
+    # Method : reset of the counter
+    def reset(self, message):
+        if message == 1:
+            self.counter = 0
 
+    # Method : loop for counter
+    def run(encoderArray):
+        bufferArray = [0] * len(encoderArray)
 
-	# Method : reset of the counter
-	def reset(self):
-		self.counter = 0
-	
+        # loop until node is shutting down
+        while not rospy.is_shutdown():
+            for i in range(len(encoderArray)):
+                # verify if encoders change state
+                if GPIO.input(encoderArray[i].encoderPin) != bufferArray[i]:
+                    encoderArray[i].counter += 1
+                    bufferArray[i] = GPIO.input(encoderArray[i].encoderPin)
+                    encoderArray[i].pub.publish(encoderArray[i].counter)
+                    rospy.loginfo(encoderArray[i].counter)
 
-	# Method : loop for counter
-	def run(self):
-		diffBuffer = 0
-
-		# loop until node is shutting down
-		while not rospy.is_shutdown():
-			# verify if encoders change state
-			if GPIO.input(self.encoderPin) != diffBuffer:
-				self.counter += GPIO.input(self.encoderPin)
-				diffBuffer = GPIO.input(self.encoderPin)
-				self.pub.publish(self.counter)
-				# rospy.loginfo(self.counter)
-
+    run = staticmethod(run)
 
 
-#------------------- Main ---------------------
-
+# ------------------- Main ---------------------
 
 
 if __name__ == '__main__':
-	try:
-		print("Encoder Node")
+    try:
+        print("Encoder Node")
 
-		# initialization Node
-		rospy.init_node('encodersNode', anonymous=True)
+        # initialization Node
+        rospy.init_node('encodersNode', anonymous=True)
 
-		# creating Encoder Object for left motor
-		encoderHSA1 = Encoder('HSA1')
-		encoderHSA1.run()
+        # creatin of List for all encoders
+        encoderArray = []
 
-		# creating Encoder Object for right motor
-		encoderHSB1 = Encoder('HSA2')
-		encoderHSB1.run()
+        # creating Encoder Object for left motor
+        encoderHSA1 = Encoder('HSA1')
+        encoderArray.append(encoderHSA1)
 
+        # creating Encoder Object for right motor
+        encoderHSB1 = Encoder('HSB1')
+        encoderArray.append(encoderHSB1)
 
+        Encoder.run(encoderArray)
 
-	except rospy.ROSInterruptException:
-		pass
-	finally:
-		GPIO.cleanup()
-
+    except rospy.ROSInterruptException:
+        pass
+    finally:
+        GPIO.cleanup()
