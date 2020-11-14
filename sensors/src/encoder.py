@@ -8,7 +8,6 @@ from std_msgs.msg import Bool
 
 # ------------------- Class ---------------------
 
-
 # Class Encoder : for every encoder input
 class Encoder():
 
