@@ -80,15 +80,15 @@ if __name__ == '__main__':
 		ultrasonicArray = []
 
 		#creating ultrasonic object front
-		ultrasonicFront = Ultrasonic('ultrasonicFront')
+		ultrasonicFront = Ultrasonic('Front')
 		ultrasonicArray.append(ultrasonicFront)
 
 		# creating ultrasonic object left
-		ultrasonicLeft = Ultrasonic('ultrasonicLeft')
+		ultrasonicLeft = Ultrasonic('Left')
 		ultrasonicArray.append(ultrasonicLeft)
 
 		# creating ultrasonic object right
-		ultrasonicRight = Ultrasonic('ultrasonicRight')
+		ultrasonicRight = Ultrasonic('Right')
 		ultrasonicArray.append(ultrasonicRight)
 	
 		Ultrasonic.run(ultrasonicArray)
