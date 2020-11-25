@@ -21,12 +21,12 @@
   <param name="ultrasonicLeft_trig" value="22" />
 
   <!--STARTING NODES-->
-  <node name="encoderNode" pkg="Labirinto" type="encoder.py" />
-  <node name="mpuNode" pkg="Labirinto" type="mpu.py" />
-  <node name="ultrasonicNode" pkg="Labirinto" type="ultrasonic.py" />
+  <node name="encoderNode" pkg="sensors" type="encoder.py" />
+  <node name="mpuNode" pkg="sensors" type="mpu.py" />
+  <node name="ultrasonicNode" pkg="sensors" type="ultrasonic.py" />
 
-  <node name="TurnActionNode" pkg="Labirinto" type="turn.py" />
+  <node name="TurnActionNode" pkg="actions" type="turn.py" />
 
-  <node name="mainNode" pkg="Labirinto" type="main.py" />
+  <node name="mainNode" pkg="main" type="main.py" />
 
 </launch>
