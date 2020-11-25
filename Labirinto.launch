@@ -1,0 +1,32 @@
+<launch>
+
+  <!--ENCODER PINS-->
+  <param name="HSA1" value="27" />
+  <param name="HSB1" value="29" />
+
+  <!--MPU AXIS REGISTER ADRESSES-->
+  <param name="gyroZ" value="0x47" />
+  <param name="gyroY" value="0x45" />
+  <param name="gyroX" value="0x43" />
+  <param name="accZ" value="0x3F" />
+  <param name="accY" value="0x3D" />
+  <param name="accX" value="0x3B" />
+
+  <!--ULTRASONIC PINS-->
+  <param name="ultrasonicFront_echo" value="28" />
+  <param name="ultrasonicFront_trig" value="26" />
+  <param name="ultrasonicRight_echo" value="18" />
+  <param name="ultrasonicRight_trig" value="16" />
+  <param name="ultrasonicLeft_echo" value="24" />
+  <param name="ultrasonicLeft_trig" value="22" />
+
+  <!--STARTING NODES-->
+  <node name="encoderNode" pkg="Labirinto" type="encoder.py" />
+  <node name="mpuNode" pkg="Labirinto" type="mpu.py" />
+  <node name="ultrasonicNode" pkg="Labirinto" type="ultrasonic.py" />
+
+  <node name="TurnActionNode" pkg="Labirinto" type="turn.py" />
+
+  <node name="mainNode" pkg="Labirinto" type="main.py" />
+
+</launch>
