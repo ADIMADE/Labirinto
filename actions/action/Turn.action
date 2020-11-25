@@ -1,5 +1,5 @@
 #goal definition
-int32 turn
+int32 turn_angle
 ---
 #result definition
 int32[] turn_complete

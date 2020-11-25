@@ -2,7 +2,7 @@
 import time
 from smbus2 import SMBus
 import math
-from std_msgs.msg import Int64
+from std_msgs.msg import Float64
 import rospy
 
 # gyroZ = 0x47
@@ -42,7 +42,7 @@ class MpuAxis:
 
 		# Publisher and Rate
 		self.stringPubName = 'mpu_' + axis
-		self.pub = rospy.Publisher(self.stringPubName, Int64, queue_size = 10)
+		self.pub = rospy.Publisher(self.stringPubName, Float64, queue_size = 10)
 		self.rate = rospy.Rate(10) # 10Hz
 		
 

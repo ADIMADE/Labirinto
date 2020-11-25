@@ -67,12 +67,12 @@ find_package(catkin REQUIRED COMPONENTS
   add_action_files(
     DIRECTORY action
     FILES Turn.action
-# )
+  )
 
 ## Generate added messages and services with any dependencies listed here
   generate_messages(
     DEPENDENCIES actionlib_msgs std_msgs
-# )
+  )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
