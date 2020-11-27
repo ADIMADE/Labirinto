@@ -4,6 +4,8 @@ import rospy
 import time
 import RPi.GPIO as GPIO
 from std_msgs.msg import Float64
+import actionlib
+import actions.msg
 
 
 # ------------------- Class ---------------------
@@ -11,6 +13,7 @@ from std_msgs.msg import Float64
 
 # Class Labirinto : Control class of Labirinto
 class Labirinto :
+
 
 
     # constructor of Class Labirinto
@@ -27,6 +30,16 @@ class Labirinto :
         self.ultrasonicSuscriberFront = rospy.Subscriber('/ultrasonic/front', Float64, self.updateRange, ('front'))
         self.ultrasonicSuscriberRight = rospy.Subscriber('/ultrasonic/right', Float64, self.updateRange, ('right'))
         self.ultrasonicSuscriberLeft = rospy.Subscriber('/ultrasonic/left', Float64, self.updateRange, ('left'))
+
+        self.turnClient = actionlib.SimpleActionServer('turnClient', actions.msg.turn)
+        self.distanceDriveClient = actionlib.SimpleActionServer('distanceDriveClient', actions.msg.distanceDrive)
+        self.straightDriveClient = actionlib.SimpleActionServer('straightDriveClient', actions.msg.straightDrive)
+
+        self.turnClient.wait_for_server()
+        self.distanceDriveClient.wait_for_server()
+        self.straightDriveClient.wait_for_server()
+
+
 
     # Callback function for Ultrasonic Suscribers
     def updateRange(self, data, args):
@@ -46,6 +59,7 @@ class Labirinto :
             print("Error passing arguments")
 
 
+
     # Method : Verification of path with the last five measures
     def pathVerification(self, ultrasonicRangeList):
         average = 0
@@ -59,11 +73,13 @@ class Labirinto :
             return False
 
 
+
     # Method : if no sensors detect wall, verify if it's an intersection or the finish of the Maze
     def noWallVerification(self):
 
         # action Forward
         print('Forward')
+        self.actionCalling('forward')
         self.addTrajectory()
         if self.trajectoryList[-1] == [True, True, True]:
             self.trajectoryList[-1].append(1)
@@ -73,9 +89,11 @@ class Labirinto :
             return False
 
 
+
     # Method : add path possibilities to the Trajectory list
     def addTrajectory(self):
         self.trajectoryList.append([self.pathVerification(self.ultrasonicRangeLeft), self.pathVerification(self.ultrasonicRangeFront), self.pathVerification(self.ultrasonicRangeRight)])
+
 
 
     # Method : closing all non explored intersections for the back trajectory
@@ -86,6 +104,7 @@ class Labirinto :
             self.trajectoryList[i] = [False, False, False]
             self.trajectoryList[i][decision] = True
             self.trajectoryList[i].append(decision)
+
 
 
     # Method : deciding next movement from the Trajectory list
@@ -123,28 +142,43 @@ class Labirinto :
         else:
             return 'error'
 
-    # def actionCalling(self, direction):
-    #
-    #     if nextMovement == 'forward':
-    #         # action forward with ultrasonic
-    #     elif nextMovement == 'right':
-    #         # action turn right 90°
-    #         # action forward with ultrasonic
-    #     elif nextMovement == 'left':
-    #         # action turn left 90°
-    #         # action forward with ultrasonic
-    #     elif nextMovement == 'UTurn':
-    #         # action turn 180°
+
+
+    # Method : Action calling and controlling
+    def actionCalling(self, movement):
+        if movement == 'forward':
+            # action forward with ultrasonic
+            goal = actions.msg.straightDrive()
+            self.straightDriveClient(goal)
+            while not self.straightDriveClient.wait_for_result():
+                if self.pathVerification(self.ultrasonicRangeLeft) or self.pathVerification(self.ultrasonicRangeRight):
+                    #verify drived distance since the path detection
+        elif movement == 'right':
+            # action turn right 90°
+            goal = actions.msg.turn(order=90)
+            self.turnClient.send_goal_and_wait(goal)
+            # action forward with ultrasonic
+        elif movement == 'left':
+            # action turn left 90°
+            goal = actions.msg.turn(order=-90)
+            self.turnClient.send_goal_and_wait(goal)
+            # action forward with ultrasonic
+        elif movement == 'UTurn':
+            # action turn 180°
+            goal = actions.msg.turn(order=180)
+            self.turnClient.send_goal_and_wait(goal)
+            self.actionCalling('forward')
+            # action forward with ultrasonic
+
 
 
     # Method : Normal Drive, maze exploring
     def normalDrive(self):
         intersection = False
-        while True:
+        while  not rospy.is_shutdown():
             if not intersection:
                 self.addTrajectory()
             nextMovement = self.pathDecision(self.trajectoryList[-1], True)
-
             if nextMovement == 'noPath':
                 intersection = self.invertedDrive(False)
             elif nextMovement == 'noWalls':
@@ -152,23 +186,26 @@ class Labirinto :
                 self.invertedDrive(True)
             else :
                 print(nextMovement)
+                self.actionCalling(nextMovement)
                 intersection = False
-                time.sleep(1)
+
 
 
     # Method : inverted Drive, follow the explored Trajectory back, until intersection or until Start Point
     def invertedDrive(self, returnToStart):
         if returnToStart:
-            print('Uturn')
             # action U Turn
-            print('Forward')
+            print('Uturn')
+            self.actionCalling('UTurn')
             # action Forward
+            print('Forward')
+            self.actionCalling('forward')
             del self.trajectoryList[-1]
         else:
-            del self.trajectoryList[-1]
-            time.sleep(1)
-            print('UTurn')
             # action U Turn
+            print('UTurn')
+            self.actionCalling('Uturn')
+            del self.trajectoryList[-1]
 
         # loop until Start if no intersection occur
         while len(self.trajectoryList) > 0:
@@ -182,20 +219,29 @@ class Labirinto :
             if returnToStart:
                 print('Return to start')
                 movement = self.pathDecision(lastMovement, False, True)
-                print(movement)
                 # action F R L
+                print(movement)
+                self.actionCalling(movement)
                 del self.trajectoryList[-1]
-                time.sleep(1)
             elif intersection == 'noPath':
                 movement = self.pathDecision(lastMovement, False)
-                print(movement)
                 # action F R L
+                print(movement)
+                self.actionCalling(movement)
                 del self.trajectoryList[-1]
-                time.sleep(1)
             else:
                 print("action to initial pose")
                 # action go initial Pose
-                time.sleep(1)
+                if lastDecision == 0:
+                    goal = actions.msg.turn(order=-90)
+                    self.turnClient.send_goal_and_wait(goal)
+                elif lastDecision == 1:
+                    goal = actions.msg.turn(order=180)
+                    self.turnClient.send_goal_and_wait(goal)
+                elif lastDecision == 2:
+                    goal = actions.msg.turn(order=90)
+                    self.turnClient.send_goal_and_wait(goal)
+                #return to normalDrive
                 break
 
         return True

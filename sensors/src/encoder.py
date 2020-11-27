@@ -24,7 +24,7 @@ class Encoder():
 		GPIO.setup(self.encoderPin, GPIO.IN)
 
 		# Publisher and Suscriber
-		self.stringPubName = 'encoder' + encoderName
+		self.stringPubName = '/encoder/' + encoderName
 		self.pub = rospy.Publisher(self.stringPubName, Int64, queue_size=10)
 		self.resetSuscriber = rospy.Subscriber('encoderReset', Bool, self.reset)
 
@@ -37,7 +37,7 @@ class Encoder():
 	def run(encoderArray):
 		bufferArray = [0] * len(encoderArray)
 
-        # loop until node is shutting down
+		# loop until node is shutting down
 		while not rospy.is_shutdown():
 			for i in range(len(encoderArray)):
 				# verify if encoders change state

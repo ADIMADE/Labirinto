@@ -11,7 +11,7 @@ from std_msgs.msg import Float64
 # Class Ultrasonic : for every ultrasonic input
 class Ultrasonic():
 
-	 # constructor of the class Ultrasonic
+	# constructor of the class Ultrasonic
 	def __init__(self, ultrasonicName):
 
 		# Attribute : distance
@@ -23,15 +23,15 @@ class Ultrasonic():
 		self.pulse_duration = 0
 
 		# Get the GPIO pin of the trigger and echo pin in the ROS parameter server
-		self.triggerPin = rospy.get_param("ultrasonic" + ultrasonicName + "_trig")
-		self.echoPin = rospy.get_param("ultrasonic" + ultrasonicName + "_echo")
+		self.triggerPin = rospy.get_param('ultrasonic' + ultrasonicName + '_trig')
+		self.echoPin = rospy.get_param('ultrasonic' + ultrasonicName + '_echo')
 
 		GPIO.setmode(GPIO.BOARD)
 		GPIO.setup(self.triggerPin, GPIO.OUT)
 		GPIO.setup(self.echoPin, GPIO.IN)
 
 		#Publisher
-		self.stringPubName = 'ultrasonic/' + ultrasonicName
+		self.stringPubName = '/ultrasonic/' + ultrasonicName
 		self.pub = rospy.Publisher(self.stringPubName, Float64, queue_size=10)
 
 	# Method for continuous distance measurement

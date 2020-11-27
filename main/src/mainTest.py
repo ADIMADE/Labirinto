@@ -121,6 +121,33 @@ class Labirinto:
             return 'error'
 
 
+    # Method : Action calling and controlling
+    def actionCalling(self, movement):
+        if movement == 'forward':
+            # action forward with ultrasonic
+            print("movement forward without ultrasonic")
+            print("movement forward with ultrasonic")
+
+            print("waiting on intersection")
+        elif movement == 'right':
+            # action turn right 90°
+            print("movement turning right")
+
+            # action forward with ultrasonic
+            print("movement forward without then with ultrasonic")
+        elif movement == 'left':
+            # action turn left 90°
+            print("movement turning left")
+
+            # action forward with ultrasonic
+            print("movement forward without then with ultrasonic")
+        elif movement == 'UTurn':
+            # action turn 180°
+            print("movement turning 180°")
+
+            print("movement forward without then with ultrasonic")
+            # action forward with ultrasonic
+
     # Method : Normal Drive, maze exploring
     def normalDrive(self):
         intersection = False
@@ -136,22 +163,27 @@ class Labirinto:
                 self.invertedDrive(True)
             else :
                 print(nextMovement)
+                self.actionCalling(nextMovement)
                 intersection = False
                 time.sleep(1)
+
 
     # Method : inverted Drive, follow the explored Trajectory back, until intersection or until Start Point
     def invertedDrive(self, returnToStart):
         if returnToStart:
-            print('Uturn')
             # action U Turn
-            print('Forward')
+            print('Uturn')
+            self.actionCalling('UTurn')
             # action Forward
+            print('Forward')
+            self.actionCalling('forward')
             del self.trajectoryList[-1]
         else:
             del self.trajectoryList[-1]
             time.sleep(1)
-            print('UTurn')
             # action U Turn
+            print('UTurn')
+            self.actionCalling('Uturn')
 
         # loop until Start if no intersection occur
         while len(self.trajectoryList) > 0:
@@ -166,18 +198,27 @@ class Labirinto:
                 print('Return to start')
                 movement = self.pathDecision(lastMovement, False, True)
                 print(movement)
+                self.actionCalling(movement)
                 # action F R L
                 del self.trajectoryList[-1]
                 time.sleep(1)
             elif intersection == 'noPath':
                 movement = self.pathDecision(lastMovement, False)
                 print(movement)
+                self.actionCalling(movement)
                 # action F R L
                 del self.trajectoryList[-1]
                 time.sleep(1)
-            else :
+            else:
+                #-----TO WORK ON-------------
                 print("action to initial pose")
                 # action go initial Pose
+                if lastDecision == 0:
+                    print("movement turning left")
+                elif lastDecision == 1:
+                    print("movement turning right")
+                elif lastDecision == 2:
+                    print("movement turning 180°")
                 time.sleep(1)
                 break
 
