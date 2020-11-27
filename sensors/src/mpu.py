@@ -37,8 +37,7 @@ class MpuAxis:
 	def __init__(self, axis):
 
 		# Get the I2C Adress of Axis in the ROS Parameter Server
-                # self.axisAdress = rospy.get_param(axis)
-		self.axisAdress = 0x47
+		self.axisAdress = rospy.get_param(axis)
 
 		# Publisher and Rate
 		self.stringPubName = 'mpu_' + axis

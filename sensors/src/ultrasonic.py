@@ -22,19 +22,16 @@ class Ultrasonic():
 		self.pulse_end = 0
 		self.pulse_duration = 0
 
-		#Get the GPIO pin of the trigger and echo pin in the ROS parameter server
-		#self.triggerPin = rospy.get_param(ultrasonicName)
-		#self.echoPin = rospy.get_param(ultrasonicName)
-
-		self.triggerPin = 11
-		self.echoPin = 13
+		# Get the GPIO pin of the trigger and echo pin in the ROS parameter server
+		self.triggerPin = rospy.get_param("ultrasonic" + ultrasonicName + "_trig")
+		self.echoPin = rospy.get_param("ultrasonic" + ultrasonicName + "_echo")
 
 		GPIO.setmode(GPIO.BOARD)
 		GPIO.setup(self.triggerPin, GPIO.OUT)
 		GPIO.setup(self.echoPin, GPIO.IN)
 
 		#Publisher
-		self.stringPubName = 'ultrasonic' + ultrasonicName
+		self.stringPubName = 'ultrasonic/' + ultrasonicName
 		self.pub = rospy.Publisher(self.stringPubName, Float64, queue_size=10)
 
 	# Method for continuous distance measurement
@@ -61,7 +58,7 @@ class Ultrasonic():
 				# calculation of distance with half speed of sound (17'320cm/s) at 25 degree
 				ultrasonicArray[i].pulse_duration = ultrasonicArray[i].pulse_end - ultrasonicArray[i].pulse_start
 				ultrasonicArray[i].distance = ultrasonicArray[i].pulse_duration * 17320
-				
+
 				ultrasonicArray[i].pub.publish(ultrasonicArray[i].distance)
 				rospy.loginfo(ultrasonicArray[i].distance)
 
@@ -74,7 +71,7 @@ if __name__ == '__main__':
 		print("Ultrasonic Node")
 
 		# initialization of the node
-		rospy.init_node('encodersNode', anonymous=True)
+		rospy.init_node('ultrasonicNode', anonymous=True)
 
 		# creation of a list for all ultrasonic sensors
 		ultrasonicArray = []
@@ -90,7 +87,7 @@ if __name__ == '__main__':
 		# creating ultrasonic object right
 		ultrasonicRight = Ultrasonic('Right')
 		ultrasonicArray.append(ultrasonicRight)
-	
+
 		Ultrasonic.run(ultrasonicArray)
 
 	except rospy.ROSInterruptException:

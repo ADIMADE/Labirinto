@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rospy
 import time
 import RPi.GPIO as GPIO
@@ -18,9 +20,9 @@ class Labirinto :
         self.noWalls = False
         self.decisionFILO = []
 
-        self.ultrasonicRangeFront = []
-        self.ultrasonicRangeRight = []
-        self.ultrasonicRangeLeft = []
+        self.ultrasonicRangeFront = [0]
+        self.ultrasonicRangeRight = [0]
+        self.ultrasonicRangeLeft = [0]
 
         self.ultrasonicSuscriberFront = rospy.Subscriber('/ultrasonic/front', Float64, self.updateRange, ('front'))
         self.ultrasonicSuscriberRight = rospy.Subscriber('/ultrasonic/right', Float64, self.updateRange, ('right'))
