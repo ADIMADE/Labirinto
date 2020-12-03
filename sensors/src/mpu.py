@@ -36,14 +36,14 @@ class MpuAxis:
 	# constructor of Class MpuAxis
 	def __init__(self, axis):
 
-		# Get the I2C Adress of Axis in the ROS Parameter Server
-		self.axisAdress = rospy.get_param(axis)
+		# Get the I2C Adress of Axis
+		self.axisAdress = 0x47
 
 		# Publisher and Rate
 		self.stringPubName = 'mpu_' + axis
 		self.pub = rospy.Publisher(self.stringPubName, Float64, queue_size = 10)
 		self.rate = rospy.Rate(10) # 10Hz
-		
+
 
 	# Method : read byte of I2C bus
 	def read_byte(self, reg):
@@ -77,11 +77,9 @@ class MpuAxis:
 			self.pub.publish(self.axisSpeed)
 			rospy.loginfo(self.axisSpeed)
 			self.rate.sleep()
-			
 
 
 #------------------- Main ---------------------
-
 
 
 if __name__ == '__main__':
