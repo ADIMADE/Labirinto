@@ -13,20 +13,20 @@
   <param name="accX" value="0x3B" />
 
   <!--ULTRASONIC PINS-->
-  <param name="ultrasonicFront_echo" value="28" />
-  <param name="ultrasonicFront_trig" value="26" />
-  <param name="ultrasonicRight_echo" value="18" />
-  <param name="ultrasonicRight_trig" value="16" />
-  <param name="ultrasonicLeft_echo" value="24" />
-  <param name="ultrasonicLeft_trig" value="22" />
+  <param name="ultrasonicFront_echo" type="int" value="32" />
+  <param name="ultrasonicFront_trig" type="int" value="26" />
+  <param name="ultrasonicRight_echo" type="int" value="18" />
+  <param name="ultrasonicRight_trig" type="int" value="16" />
+  <param name="ultrasonicLeft_echo" type="int" value="24" />
+  <param name="ultrasonicLeft_trig" type="int" value="22" />
 
   <!--STARTING NODES-->
-  <node name="encoderNode" pkg="sensors" type="encoder.py" />
-  <node name="mpuNode" pkg="sensors" type="mpu.py" />
+  <!--node name="encoderNode" pkg="sensors" type="encoder.py" /-->
+  <!--node name="mpuNode" pkg="sensors" type="mpu.py" /-->
   <node name="ultrasonicNode" pkg="sensors" type="ultrasonic.py" />
 
-  <node name="TurnActionNode" pkg="actions" type="turn.py" />
+  <!--<node name="TurnActionNode" pkg="actions" type="turn.py" />-->
 
-  <node name="mainNode" pkg="main" type="main.py" />
+  <!-- <node name="mainNode" pkg="main" type="main.py" />-->
 
 </launch>
