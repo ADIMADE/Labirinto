@@ -1,0 +1,8 @@
+#goal definition
+int32 distance
+---
+#result definition
+int32[] distanceCompleted
+---
+#feedback
+int32[] distanceCurrent

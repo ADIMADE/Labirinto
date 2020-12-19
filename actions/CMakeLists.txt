@@ -67,6 +67,8 @@ find_package(catkin REQUIRED COMPONENTS
   add_action_files(
     DIRECTORY action
     FILES turn.action
+    FILES straightDrive.action
+    FILES straightDriveDist.action
   )
 
 ## Generate added messages and services with any dependencies listed here

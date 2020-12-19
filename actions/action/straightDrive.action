@@ -1,0 +1,8 @@
+#goal definition
+bool drive_until_wall
+---
+#result definition
+bool[] wall_true
+---
+#feedback
+bool[] wall_false
