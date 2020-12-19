@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 import RPi.GPIO as GPIO
 import time
@@ -66,7 +67,7 @@ def distance(side):
     # time difference between start and arrival
 
     timeElapsed = stopTime - startTime
-    distance = (timeElapsed * 3430) / 2
+    distance = (timeElapsed * 34300) / 2
 
     return distance
 
@@ -74,10 +75,25 @@ def distance(side):
 if __name__ == '__main__':
 
     try:
-        speed = 100
+        aSpeed = 70
+        bSpeed = 70
+        target_diff = 0
+        KP = 0.2
+        KI = 0.002
+        KD = 0
+        prev_errorL = 0
+        prev_errorR = 0
+        sum_errorL = 0
+        sum_errorR = 0
+        track_width = 30
+        sensor_offset = 7
+
+        target = (track_width/2)-7
 
         rightRangeList = [distance('right')]
         leftRangeList = [distance('left')]
+
+        print("KP = ", KP, "KI = ", KI,"KD = ", KD)
 
         wall = True
 
@@ -92,18 +108,36 @@ if __name__ == '__main__':
             distR = sum(rightRangeList) / len(rightRangeList)
             distL = sum(leftRangeList) / len(leftRangeList)
 
-            if distR > 30 or distL > 30:
+            if distR >50 or distL > 50:
                 wall = False
 
-            diff = distR - distL
+            errorR = target - distL
+            errorL = target - distR
 
-            print("Measured Distance Right = %.1f mm" % distR)
-            print("Measured Distance Left = %.1f mm" % distL)
+            aSpeed += (errorL * KP) + (sum_errorL * KI) + (prev_errorL * KD)
+            bSpeed += (errorR * KP) + (sum_errorR * KI) + (prev_errorR * KD)
 
-            a_in1.start(float(speed-diff))
-            a_in2.start(False)
-            b_in1.start(False)
-            b_in2.start(float(speed+diff))
+            if aSpeed > 100 :
+                aSpeed = 100
+            if aSpeed < 60:
+                aSpeed = 60
+            if bSpeed > 100 :
+                bSpeed = 100
+            if bSpeed < 60:
+                bSpeed = 60
+
+            print("%.1f;%.1f;%.1f;%.1f;%.1f;%.1f" %(distL,distR,errorL,errorR,aSpeed,bSpeed))
+
+            a_in1.start(False)
+            a_in2.start(float(aSpeed))
+            b_in1.start(float(bSpeed))
+            b_in2.start(False)
+
+            prev_errorL = errorL
+            prev_errorR = errorR
+
+            sum_errorL += errorL
+            sum_errorR += errorR
 
             time.sleep(0.01)
 

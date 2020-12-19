@@ -23,8 +23,12 @@ class Ultrasonic():
 		self.pulse_duration = 0
 
 		# Get the GPIO pin of the trigger and echo pin in the ROS parameter server
-		self.triggerPin = rospy.get_param('ultrasonic' + ultrasonicName + '_trig')
-		self.echoPin = rospy.get_param('ultrasonic' + ultrasonicName + '_echo')
+		paramName = '/ultrasonic' + ultrasonicName + '_trig'
+		rospy.loginfo(paramName)
+		self.triggerPin = int(rospy.get_param(paramName))
+		paramName = '/ultrasonic' + ultrasonicName + '_echo'
+		self.echoPin = int(rospy.get_param(paramName))
+		rospy.loginfo(self.echoPin)
 
 		GPIO.setmode(GPIO.BOARD)
 		GPIO.setup(self.triggerPin, GPIO.OUT)
@@ -49,7 +53,7 @@ class Ultrasonic():
 				GPIO.output(ultrasonicArray[i].triggerPin, False)
 
 				# start timer while ultrasonic waves are sent
-				while GPIO.input(13) == 0: 
+				while GPIO.input(ultrasonicArray[i].echoPin) == 0: 
 					ultrasonicArray[i].pulse_start = time.time()
 				# stop timer when ultrasonic waves are received
 				while GPIO.input(ultrasonicArray[i].echoPin) == 1:
