@@ -4,19 +4,18 @@ import rospy
 import RPi.GPIO as GPIO
 import actionlib
 import actions.msg
-import time
 from std_msgs.msg import Float64
 
 
-class StraightDrive(object):
+class StraightDriveDist(object):
     def __init__(self, name):
         # create messages that are used to publish feedback/result
-        self._feedback = actions.msg.straightDriveActionFeedback()
-        self._result = actions.msg.straightDriveActionResult()
+        self._feedback = actions.msg.straightDriveDistActionFeedback()
+        self._result = actions.msg.straightDriveDistActionResult()
 
         # create action server
         self._action_name = name
-        self._as = actionlib.SimpleActionServer(self._action_name, actions.msg.straightDriveAction,
+        self._as = actionlib.SimpleActionServer(self._action_name, actions.msg.straightDriveDistAction,
         execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
 
@@ -40,17 +39,21 @@ class StraightDrive(object):
         # Set standby pin of motor controller high
         GPIO.output(self.STBY_PIN, True)
 
-        # Initialize the motor and sensor variables
-        self.distLeft = 0
-        self.distRight = 0
+        # Initialize the variable for the sensors and motors
+        self.distFront = 0
+        self.encoderLeft = 0
+        self.encoderRight = 0
         self.aSpeed = 70
         self.bSpeed = 70
         self._feedback = True
 
-        # Setup subscribers for the ultrasonic sensors
-        self.subUltraLeft = rospy.Subscriber('/ultrasonic/Left', Float64, self.ultrasonic_left_callback)
+        # Setup subscriber for the ultrasonic sensor
+        self.subUltraFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.ultrasonic_front_callback)
 
-        self.subUltraRight = rospy.Subscriber('/ultrasonic/Right', Float64, self.ultrasonic_right_callback)
+        # Setup subscribers for encoder sensors
+        self.subEncoderLeft = rospy.Subscriber('/encoder/HSA1', Float64, self.encoder_left_callback)
+
+        self.subEncoderRight = rospy.Subscriber('/encoder/HSB1', Float64, self.encoder_right_callback)
 
     # Define a function to turn off all motors
     def all_motors_off(self):
@@ -61,11 +64,14 @@ class StraightDrive(object):
         GPIO.output(self.BIN2_PIN, False)
 
     # When a new message appears from subscriber then the callback function is called
-    def ultrasonic_left_callback(self, message):
-        self.distLeft = message
+    def ultrasonic_front_callback(self, message):
+        self._feedback = message
 
-    def ultrasonic_right_callback(self, message):
-        self.distRight = message
+    def encoder_left_callback(self, message):
+        self.encoderLeft = message
+
+    def encoder_right_callback(self, message):
+        self.encoderRight = message
 
     # Execute function is automatically executed in action server
     def execute_cb(self, goal):
@@ -78,14 +84,8 @@ class StraightDrive(object):
         kd = 0.002
 
         # variables: pid error memories
-        prev_error_left = 0
-        prev_error_right = 0
-        sum_error_left = 0
-        sum_error_right = 0
-
-        # variables: target calculation
-        track_width = 30
-        sensor_offset = 7
+        prev_error = 0
+        sum_error = 0
 
         # turn all motors on 100 percent speed
         a_in1 = GPIO.PWM(self.AIN1_PIN, 100)
@@ -97,13 +97,10 @@ class StraightDrive(object):
         GPIO.output(self.STBY_PIN, True)
 
         # publish info to the console for the user
-        rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.drive_until_passage,
+        rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
                                                                             self._feedback))
-        # calculated pid controller target
-        target = (track_width / 2) - sensor_offset
-
         # start executing the action
-        while self.distLeft or self.distRight < 30:
+        while self._feedback > goal.distance:
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -112,29 +109,18 @@ class StraightDrive(object):
                 self.all_motors_off()
                 break
 
-            # feedback: wall is present
-            self._feedback = True
-
             # calculating effective distance and expected distance
-            error_left = target - self.distLeft
-            error_right = target - self.distRight
+            error = self.encoderLeft - self.encoderRight
 
             # pid controller for speed regulation
-            self.aSpeed += (error_left * kp) + (sum_error_left * ki) + \
-                           (prev_error_left * kd)
-
-            self.bSpeed += (error_right * kp) + (sum_error_right * ki) + \
-                           (prev_error_right * kd)
+            self.aSpeed += (error * kp) + (sum_error * ki) + \
+                           (prev_error * kd)
 
             # speed limitations
             if self.aSpeed > 100:
                 self.aSpeed = 100
             if self.aSpeed < 60:
                 self.aSpeed = 60
-            if self.bSpeed > 100:
-                self.bSpeed = 100
-            if self.bSpeed < 60:
-                self.bSpeed = 60
 
             # Turn on motors
             a_in1.start(float(self.aSpeed))
@@ -143,11 +129,8 @@ class StraightDrive(object):
             b_in2.start(False)
 
             # saving of errors
-            prev_error_left = error_left
-            prev_error_right = error_right
-
-            sum_error_left += error_left
-            sum_error_right += error_right
+            prev_error = error
+            sum_error += error
 
             # Publish that there ist a wall
             self._as.publish_feedback(self._feedback)
@@ -155,17 +138,13 @@ class StraightDrive(object):
         # When while condition is true, success function turn off all motors an publish success
         if success:
             self.all_motors_off()
-
-            # feedback: wall_present
-            self._feedback = False
-            # result: wall_not_present
-            self._result = True
+            self._result = self._feedback
 
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
 
 
 if __name__ == '__main__':
-    rospy.init_node('straightDrive')
-    server = StraightDrive(rospy.get_name())
+    rospy.init_node('straightDriveDist')
+    server = StraightDriveDist(rospy.get_name())
     rospy.spin()
