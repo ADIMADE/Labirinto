@@ -93,7 +93,7 @@ class Turn(object):
 			a_in1.start(float(speed))
 			a_in2.start(False)
 			b_in1.start(float(speed))
-			b_in2.start(False)se
+			b_in2.start(False)
 
 			# Publish driven angle
 			self._as.publish_feedback(self._feedback)
