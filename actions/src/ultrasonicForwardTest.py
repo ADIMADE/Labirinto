@@ -108,8 +108,8 @@ if __name__ == '__main__':
             distR = sum(rightRangeList) / len(rightRangeList)
             distL = sum(leftRangeList) / len(leftRangeList)
 
-            if distR >50 or distL > 50:
-                wall = False
+            if distR or distL > 30:
+                break
 
             errorR = target - distL
             errorL = target - distR

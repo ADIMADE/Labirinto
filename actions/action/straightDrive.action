@@ -1,8 +1,8 @@
 #goal definition
-bool drive_until_wall
+bool drive_until_passage
 ---
 #result definition
-bool[] wall_true
+bool[] wall_not_present
 ---
 #feedback
-bool[] wall_false
+bool[] wall_present
