@@ -97,8 +97,8 @@ class StraightDriveDist(object):
         GPIO.output(self.STBY_PIN, True)
 
         # publish info to the console for the user
-        rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
-                                                                            self._feedback))
+        # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
+        #                                                                    self._feedback))
         # start executing the action
         while self._feedback > goal.distance:
             # Function is active when a new request is made from action client

@@ -103,7 +103,7 @@ class StraightDrive(object):
         target = (track_width / 2) - sensor_offset
 
         # start executing the action
-        while self.distLeft or self.distRight < 30:
+        while self.distLeft < 30  or self.distRight < 30:
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -137,8 +137,8 @@ class StraightDrive(object):
                 self.bSpeed = 60
 
             # Turn on motors
-            a_in1.start(float(self.aSpeed))
-            a_in2.start(False)
+            a_in1.start(False)
+            a_in2.start(float(self.aSpeed))
             b_in1.start(float(self.bSpeed))
             b_in2.start(False)
 
@@ -169,3 +169,4 @@ if __name__ == '__main__':
     rospy.init_node('straightDrive')
     server = StraightDrive(rospy.get_name())
     rospy.spin()
+    GPIO.cleanup()

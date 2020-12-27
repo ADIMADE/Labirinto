@@ -1,4 +1,4 @@
-0x46<launch>
+<launch>
 
   <!--ENCODER PINS-->
   <param name="HSA1" value="27" />
