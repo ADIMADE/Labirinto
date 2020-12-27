@@ -45,7 +45,7 @@ class StraightDriveDist(object):
         self.encoderRight = 0
         self.aSpeed = 70
         self.bSpeed = 70
-        self._feedback = True
+        self._feedback = 0
 
         # Setup subscriber for the ultrasonic sensor
         self.subUltraFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.ultrasonic_front_callback)
@@ -100,7 +100,7 @@ class StraightDriveDist(object):
         # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
         #                                                                    self._feedback))
         # start executing the action
-        while self._feedback > goal.distance:
+        while self._feedback.data > goal.distance:
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -123,8 +123,8 @@ class StraightDriveDist(object):
                 self.aSpeed = 60
 
             # Turn on motors
-            a_in1.start(float(self.aSpeed))
-            a_in2.start(False)
+            a_in1.start(False)
+            a_in2.start(float(self.aSpeed))
             b_in1.start(float(self.bSpeed))
             b_in2.start(False)
 

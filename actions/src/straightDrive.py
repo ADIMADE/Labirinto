@@ -102,8 +102,11 @@ class StraightDrive(object):
         # calculated pid controller target
         target = (track_width / 2) - sensor_offset
 
+        rospy.loginfo(type(self.distLeft))
+        rospy.loginfo(type(self.distLeft.data))
+
         # start executing the action
-        while self.distLeft < 30  or self.distRight < 30:
+        while self.distLeft.data < 10.0  or self.distRight.data < 10.0:
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -116,8 +119,8 @@ class StraightDrive(object):
             self._feedback = True
 
             # calculating effective distance and expected distance
-            error_left = target - self.distLeft
-            error_right = target - self.distRight
+            error_left = target - self.distLeft.data
+            error_right = target - self.distRight.data
 
             # pid controller for speed regulation
             self.aSpeed += (error_left * kp) + (sum_error_left * ki) + \
