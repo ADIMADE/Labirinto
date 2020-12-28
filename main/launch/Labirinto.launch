@@ -21,12 +21,14 @@
   <param name="ultrasonicLeft_trig" type="int" value="22" />
 
   <!--STARTING NODES-->
-  <!--node name="encoderNode" pkg="sensors" type="encoder.py" /-->
-  <!--node name="mpuNode" pkg="sensors" type="mpu.py" /-->
+  <node name="encoderNode" pkg="sensors" type="encoder.py" />
+  <node name="mpuNode" pkg="sensors" type="mpu.py" />
   <node name="ultrasonicNode" pkg="sensors" type="ultrasonic.py" />
 
-  <!--<node name="TurnActionNode" pkg="actions" type="turn.py" />-->
+  <node name="TurnActionNode" pkg="actions" type="turn.py" />
+  <node name="StraightDriveActionNode" pkg="actions" type="straightDrive.py" />
+  <node name="StraightDriveDistActionNode" pkg="actions" type="straightDriveDist.py" />
 
-  <!-- <node name="mainNode" pkg="main" type="main.py" />-->
+  <!--<node name="mainNode" pkg="main" type="main.py" />-->
 
 </launch>
