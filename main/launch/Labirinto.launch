@@ -1,8 +1,8 @@
 <launch>
 
   <!--ENCODER PINS-->
-  <param name="HSA1" value="27" />
-  <param name="HSB1" value="29" />
+  <param name="HSA1" value="29" />
+  <param name="HSB1" value="31" />
 
   <!--MPU AXIS REGISTER ADRESSES-->
   <param name="gyroZ" value="0x47" />

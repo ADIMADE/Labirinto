@@ -17,8 +17,10 @@ class Encoder():
 		# Attribute : counter for increments
 		self.counter = 0
 
-		# Get the GPIO Pin of Encoder in the ROS Parameter Server
-		self.encoderPin = rospy.get_param(encoderName)
+		# Get the GPIO Pin of Encoder in the ROS Parameter Serve
+		self.encoderPin = int(rospy.get_param(encoderName))
+
+		rospy.loginfo(self.encoderPin)
 
 		GPIO.setmode(GPIO.BOARD)
 		GPIO.setup(self.encoderPin, GPIO.IN)

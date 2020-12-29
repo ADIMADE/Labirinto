@@ -5,6 +5,7 @@ import RPi.GPIO as GPIO
 import actionlib
 import actions.msg
 from std_msgs.msg import Float64
+from std_msgs.msg import Int64
 
 
 class StraightDriveDist(object):
@@ -51,9 +52,9 @@ class StraightDriveDist(object):
         self.subUltraFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.ultrasonic_front_callback)
 
         # Setup subscribers for encoder sensors
-        self.subEncoderLeft = rospy.Subscriber('/encoder/HSA1', Float64, self.encoder_left_callback)
+        self.subEncoderLeft = rospy.Subscriber('/encoder/HSA1', Int64, self.encoder_left_callback)
 
-        self.subEncoderRight = rospy.Subscriber('/encoder/HSB1', Float64, self.encoder_right_callback)
+        self.subEncoderRight = rospy.Subscriber('/encoder/HSB1', Int64, self.encoder_right_callback)
 
     # Define a function to turn off all motors
     def all_motors_off(self):

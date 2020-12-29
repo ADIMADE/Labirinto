@@ -30,33 +30,42 @@ class Labirinto :
 
         self.pubLed = rospy.Publisher("/led", String, queue_size=10)
 
-        self.ultrasonicSuscriberFront = rospy.Subscriber('/ultrasonic/front', Float64, self.updateRange, ('front'))
-        self.ultrasonicSuscriberRight = rospy.Subscriber('/ultrasonic/right', Float64, self.updateRange, ('right'))
-        self.ultrasonicSuscriberLeft = rospy.Subscriber('/ultrasonic/left', Float64, self.updateRange, ('left'))
+        self.ultrasonicSuscriberFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.updateRange, ('front'))
+        self.ultrasonicSuscriberRight = rospy.Subscriber('/ultrasonic/Right', Float64, self.updateRange, ('right'))
+        self.ultrasonicSuscriberLeft = rospy.Subscriber('/ultrasonic/Left', Float64, self.updateRange, ('left'))
 
-        self.turnClient = actionlib.SimpleActionServer('turnClient', actions.msg.turn)
-        self.straightDriveDistClient = actionlib.SimpleActionServer('straightDriveDistClient', actions.msg.straightDriveDist)
-        self.straightDriveClient = actionlib.SimpleActionServer('straightDriveClient', actions.msg.straightDrive)
+        self.turnClient = actionlib.SimpleActionClient('TurnActionNode', actions.msg.turnAction)
+        self.straightDriveDistClient = actionlib.SimpleActionClient('StraightDriveDistActionNode', actions.msg.straightDriveDistAction)
+        self.straightDriveClient = actionlib.SimpleActionClient('StraightDriveActionNode', actions.msg.straightDriveAction)
+
+        rospy.loginfo("All requests to servers sended")
 
         self.turnClient.wait_for_server()
+        rospy.loginfo("Feedback of turnClient received")
         self.straightDriveDistClient.wait_for_server()
+        rospy.loginfo("Feedback of straightDriveDistClient")
         self.straightDriveClient.wait_for_server()
 
+        rospy.loginfo("Feedback of all servers received")
 
+        while len(self.ultrasonicRangeFront) < 5 and len(self.ultrasonicRangeLeft) < 5 and len(self.ultrasonicRangeRight) < 5:
+            rospy.loginfo("wait for measures")
+            time.sleep(0.1)
 
     # Callback function for Ultrasonic Suscribers
     def updateRange(self, data, args):
+        rospy.loginfo(data)
         if args == 'front':
-            self.ultrasonicRangeFront.append(data)
-            if len(self.ultrasonicRangeFront[0]) > 5:
+            self.ultrasonicRangeFront.append(data.data)
+            if len(self.ultrasonicRangeFront) > 5:
                 del self.ultrasonicRangeFront[0]
         elif args == 'right':
-            self.ultrasonicRangeRight.append(data)
-            if len(self.ultrasonicRangeRight[0]) > 5:
+            self.ultrasonicRangeRight.append(data.data)
+            if len(self.ultrasonicRangeRight) > 5:
                 del self.ultrasonicRangeRight[0]
         elif args == 'left':
-            self.ultrasonicRangeLeft.append(data)
-            if len(self.ultrasonicRangeLeft[0] > 5):
+            self.ultrasonicRangeLeft.append(data.data)
+            if len(self.ultrasonicRangeLeft) > 5:
                 del self.ultrasonicRangeLeft[0]
         else:
             print("Error passing arguments")
@@ -65,10 +74,11 @@ class Labirinto :
 
     # Method : Verification of path with the last five measures
     def pathVerification(self, ultrasonicRangeList):
-        average = 0
+        averageCount = 0
         for i in ultrasonicRangeList:
-            average += i
-        average / len(ultrasonicRangeList)
+            averageCount += i
+        average = averageCount / len(ultrasonicRangeList)
+        rospy.loginfo(average)
 
         if average > 20:
             return True
@@ -151,34 +161,34 @@ class Labirinto :
     def actionCalling(self, movement):
         if movement == 'forward':
             # action forward with ultrasonic
-            goal = actions.msg.straightDriveDist(order = 20)
-            self.straightDriveDistClient(goal)
+            goal = actions.msg.straightDriveDistGoal(distance = 20)
+            self.straightDriveDistClient.send_goal_and_wait(goal)
 
-            goal = actions.msg.straightDrive()
-            self.straightDriveClient(goal)
-            while not self.straightDriveClient.wait_for_result():
+            goal = actions.msg.straightDriveGoal()
+            self.straightDriveClient.send_goal_and_wait(goal)
+           #  while not self.straightDriveClient.wait_for_result():
                 #if self.pathVerification(self.ultrasonicRangeLeft) or self.pathVerification(self.ultrasonicRangeRight):
                     #verify drived distance since the path detection
 
-            goal = actions.msg.straightDriveDist(order=20)
-            self.straightDriveDistClient(goal)
+            goal = actions.msg.straightDriveDistGoal(distance = 20)
+            self.straightDriveDistClient.send_goal_and_wait(goal)
 
         elif movement == 'right':
             # action turn right 90°
-            goal = actions.msg.turn(order=90)
+            goal = actions.msg.turnGoal(turn_angle = 90)
             self.turnClient.send_goal_and_wait(goal)
             # action forward with ultrasonic
             self.actionCalling('forward')
         elif movement == 'left':
             # action turn left 90°
-            goal = actions.msg.turn(order=-90)
+            goal = actions.msg.turnGoal(turn_angle = -90)
             self.turnClient.send_goal_and_wait(goal)
             # action forward with ultrasonic
             self.actionCalling('forward')
         elif movement == 'UTurn':
-        	self.pubLed('blinkFast')
+            self.pubLed.publish('blinkFast')
             # action turn 180°
-            goal = actions.msg.turn(order=180)
+            goal = actions.msg.turnGoal(turn_angle = 180)
             self.turnClient.send_goal_and_wait(goal)
             self.actionCalling('forward')
             # action forward with ultrasonic
@@ -187,11 +197,13 @@ class Labirinto :
 
     # Method : Normal Drive, maze exploring
     def normalDrive(self):
-        self.pubLed('solid')
+        self.pubLed.publish('solid')
+        rospy.loginfo("Normal Drive")
         intersection = False
         while  not rospy.is_shutdown():
             if not intersection:
                 self.addTrajectory()
+            rospy.loginfo(self.pathDecision(self.trajectoryList[-1], True))
             nextMovement = self.pathDecision(self.trajectoryList[-1], True)
             if nextMovement == 'noPath':
                 intersection = self.invertedDrive(False)
@@ -207,7 +219,8 @@ class Labirinto :
 
     # Method : inverted Drive, follow the explored Trajectory back, until intersection or until Start Point
     def invertedDrive(self, returnToStart):
-        self.pubLed('blinkSlow')
+        self.pubLed.publish('blinkSlow')
+        rospy.loginfo("Inverted Drive")
         if returnToStart:
             # action U Turn
             print('Uturn')
@@ -248,13 +261,13 @@ class Labirinto :
                 print("action to initial pose")
                 # action go initial Pose
                 if lastDecision == 0:
-                    goal = actions.msg.turn(order=-90)
+                    goal = actions.msg.turnGoal(turn_angle = -90)
                     self.turnClient.send_goal_and_wait(goal)
                 elif lastDecision == 1:
-                    goal = actions.msg.turn(order=180)
+                    goal = actions.msg.turnGoal(turn_angle = 180)
                     self.turnClient.send_goal_and_wait(goal)
                 elif lastDecision == 2:
-                    goal = actions.msg.turn(order=90)
+                    goal = actions.msg.turnGoal(turn_angle = 90)
                     self.turnClient.send_goal_and_wait(goal)
                 #return to normalDrive
                 break
@@ -272,7 +285,7 @@ if __name__ == '__main__':
     try:
 
         # initialization Node
-        rospy.init_node('main', anonymous=True)
+        rospy.init_node('main', anonymous=True)	
 
         labirinto = Labirinto()
         labirinto.normalDrive()
