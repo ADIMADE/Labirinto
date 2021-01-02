@@ -34,6 +34,19 @@ class StraightDriveDist(object):
         self.aSpeed = 70
         self.bSpeed = 70
 
+        # Setup GPIO's as output
+        GPIO.setup(self.AIN1_PIN, GPIO.OUT)
+        GPIO.setup(self.AIN2_PIN, GPIO.OUT)
+        GPIO.setup(self.BIN1_PIN, GPIO.OUT)
+        GPIO.setup(self.BIN2_PIN, GPIO.OUT)
+        GPIO.setup(self.STBY_PIN, GPIO.OUT)
+
+        # turn all motors on 100 percent speed
+        a_in1 = GPIO.PWM(self.AIN1_PIN, 100)
+        a_in2 = GPIO.PWM(self.AIN2_PIN, 100)
+        b_in1 = GPIO.PWM(self.BIN1_PIN, 100)
+        b_in2 = GPIO.PWM(self.BIN2_PIN, 100)
+
         # Setup subscriber for the ultrasonic sensor
         self.subUltraFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.ultrasonic_front_callback)
 
@@ -66,13 +79,6 @@ class StraightDriveDist(object):
         # Select pin mode
         GPIO.setmode(GPIO.BOARD)
 
-        # Setup GPIO's as output
-        GPIO.setup(self.AIN1_PIN, GPIO.OUT)
-        GPIO.setup(self.AIN2_PIN, GPIO.OUT)
-        GPIO.setup(self.BIN1_PIN, GPIO.OUT)
-        GPIO.setup(self.BIN2_PIN, GPIO.OUT)
-        GPIO.setup(self.STBY_PIN, GPIO.OUT)
-
         # Set standby pin of motor controller high
         GPIO.output(self.STBY_PIN, True)
 
@@ -87,12 +93,6 @@ class StraightDriveDist(object):
         # variables: pid error memories
         prev_error = 0
         sum_error = 0
-
-        # turn all motors on 100 percent speed
-        a_in1 = GPIO.PWM(self.AIN1_PIN, 100)
-        a_in2 = GPIO.PWM(self.AIN2_PIN, 100)
-        b_in1 = GPIO.PWM(self.BIN1_PIN, 100)
-        b_in2 = GPIO.PWM(self.BIN2_PIN, 100)
 
         # Turn on standby pin of the motor driver chip
         GPIO.output(self.STBY_PIN, True)
@@ -124,10 +124,10 @@ class StraightDriveDist(object):
                 self.aSpeed = 60
 
             # Turn on motors
-            a_in1.start(float(self.aSpeed))
-            a_in2.start(False)
-            b_in1.start(float(self.bSpeed))
-            b_in2.start(False)
+            self.a_in1.start(float(self.aSpeed))
+            self.a_in2.start(False)
+            self.b_in1.start(float(self.bSpeed))
+            self.b_in2.start(False)
 
             # saving of errors
             prev_error = error
@@ -142,11 +142,11 @@ class StraightDriveDist(object):
         if success:
             self.all_motors_off()
 
-            del a_in1
-            del a_in2
-            del b_in1
-            del b_in2
-            GPIO.cleanup()
+            #del a_in1
+            #del a_in2
+            #del b_in1
+            #del b_in2
+            #GPIO.cleanup()
 
             self._result = self._feedback
 
