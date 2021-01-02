@@ -27,17 +27,6 @@ class Turn(object):
 		self.BIN2_PIN = 19
 		self.STBY_PIN = 23
 
-		GPIO.setmode(GPIO.BOARD)
-		# Setup GPIO's as output
-		GPIO.setup(self.AIN1_PIN, GPIO.OUT)
-		GPIO.setup(self.AIN2_PIN, GPIO.OUT)
-		GPIO.setup(self.BIN1_PIN, GPIO.OUT)
-		GPIO.setup(self.BIN2_PIN, GPIO.OUT)
-		GPIO.setup(self.STBY_PIN, GPIO.OUT)
-
-		# Set standby pin of motor controller high
-		GPIO.output(self.STBY_PIN, True)
-
 		# Initialize the variable for the angle speed of the mpu sensor
 		self.degrPerSec = 0
 
@@ -57,6 +46,19 @@ class Turn(object):
 
 	# Execute function is automatically executed in action server
 	def execute_cb(self, goal):
+
+		GPIO.setmode(GPIO.BOARD)
+		# Setup GPIO's as output
+		GPIO.setup(self.AIN1_PIN, GPIO.OUT)
+		GPIO.setup(self.AIN2_PIN, GPIO.OUT)
+		GPIO.setup(self.BIN1_PIN, GPIO.OUT)
+		GPIO.setup(self.BIN2_PIN, GPIO.OUT)
+		GPIO.setup(self.STBY_PIN, GPIO.OUT)
+
+		# Set standby pin of motor controller high
+		GPIO.output(self.STBY_PIN, True)
+
+
 		self._feedback = 0
 		rate = 0.01
 		speed = 100
@@ -104,6 +106,8 @@ class Turn(object):
 		# When while condition is true, success function turn off all motors an publish success
 		if success:
 			self.all_motors_off()
+
+			GPIO.cleanup()
 			self._result = self._feedback
 			rospy.loginfo('%s: Succeeded' % self._action_name)
 			self._as.set_succeeded(self._result)
