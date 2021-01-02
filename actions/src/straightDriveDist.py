@@ -21,6 +21,11 @@ class StraightDriveDist(object):
         self._as.start()
 
         # RPi Pin setup
+        AIN1_PIN = 29
+        AIN2_PIN = 31
+        BIN1_PIN = 21
+        BIN2_PIN = 19
+        STBY_PIN = 23
 
         # Initialize the variable for the sensors and motors
         self.distFront = 0
@@ -57,6 +62,22 @@ class StraightDriveDist(object):
 
     # Execute function is automatically executed in action server
     def execute_cb(self, goal):
+
+        # Setup GPIO's as output
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
+
+        GPIO.setup(self.AIN1_PIN, GPIO.OUT)
+        GPIO.setup(self.AIN2_PIN, GPIO.OUT)
+        GPIO.setup(self.BIN1_PIN, GPIO.OUT)
+        GPIO.setup(self.BIN2_PIN, GPIO.OUT)
+        GPIO.setup(self.STBY_PIN, GPIO.OUT)
+
+        # turn all motors on 100 percent speed
+        a_in1 = GPIO.PWM(self.AIN1_PIN, 100)
+        a_in2 = GPIO.PWM(self.AIN2_PIN, 100)
+        b_in1 = GPIO.PWM(self.BIN1_PIN, 100)
+        b_in2 = GPIO.PWM(self.BIN2_PIN, 100)
 
         # Set standby pin of motor controller high
         GPIO.output(self.STBY_PIN, True)
@@ -112,17 +133,14 @@ class StraightDriveDist(object):
             # Publish that there ist a wall
             self._as.publish_feedback(self._feedback)
 
-            GPIO.cleanup()
+            a_in1.stop()
+            a_in2.stop()
+            b_in1.stop()
+            b_in2.stop()
 
         # When while condition is true, success function turn off all motors an publish success
         if success:
             self.all_motors_off()
-
-            #del a_in1
-            #del a_in2
-            #del b_in1
-            #del b_in2
-            #GPIO.cleanup()
 
             self._result = self._feedback
 
@@ -135,27 +153,6 @@ if __name__ == '__main__':
         try:
                  rospy.init_node('straightDriveDist')
                  server = StraightDriveDist(rospy.get_name())
-                 # Setup GPIO's as output
-                 GPIO.setmode(GPIO.BOARD)
-                 GPIO.setwarnings(False)
-
-                 AIN1_PIN = 29
-                 AIN2_PIN = 31
-                 BIN1_PIN = 21
-                 BIN2_PIN = 19
-                 STBY_PIN = 23
-
-                 GPIO.setup(AIN1_PIN, GPIO.OUT)
-                 GPIO.setup(AIN2_PIN, GPIO.OUT)
-                 GPIO.setup(BIN1_PIN, GPIO.OUT)
-                 GPIO.setup(BIN2_PIN, GPIO.OUT)
-                 GPIO.setup(STBY_PIN, GPIO.OUT)
-
-                 # turn all motors on 100 percent speed
-                 a_in1 = GPIO.PWM(AIN1_PIN, 100)
-                 a_in2 = GPIO.PWM(AIN2_PIN, 100)
-                 b_in1 = GPIO.PWM(BIN1_PIN, 100)
-                 b_in2 = GPIO.PWM(BIN2_PIN, 100)
                  rospy.spin()
 
         except rospy.ROSInterruptExcpetion:
