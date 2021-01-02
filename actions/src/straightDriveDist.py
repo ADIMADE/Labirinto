@@ -27,19 +27,6 @@ class StraightDriveDist(object):
         self.BIN2_PIN = 19
         self.STBY_PIN = 23
 
-        # Select pin mode
-        GPIO.setmode(GPIO.BOARD)
-
-        # Setup GPIO's as output
-        GPIO.setup(self.AIN1_PIN, GPIO.OUT)
-        GPIO.setup(self.AIN2_PIN, GPIO.OUT)
-        GPIO.setup(self.BIN1_PIN, GPIO.OUT)
-        GPIO.setup(self.BIN2_PIN, GPIO.OUT)
-        GPIO.setup(self.STBY_PIN, GPIO.OUT)
-
-        # Set standby pin of motor controller high
-        GPIO.output(self.STBY_PIN, True)
-
         # Initialize the variable for the sensors and motors
         self.distFront = 0
         self.encoderLeft = 0
@@ -75,6 +62,20 @@ class StraightDriveDist(object):
 
     # Execute function is automatically executed in action server
     def execute_cb(self, goal):
+
+        # Select pin mode
+        GPIO.setmode(GPIO.BOARD)
+
+        # Setup GPIO's as output
+        GPIO.setup(self.AIN1_PIN, GPIO.OUT)
+        GPIO.setup(self.AIN2_PIN, GPIO.OUT)
+        GPIO.setup(self.BIN1_PIN, GPIO.OUT)
+        GPIO.setup(self.BIN2_PIN, GPIO.OUT)
+        GPIO.setup(self.STBY_PIN, GPIO.OUT)
+
+        # Set standby pin of motor controller high
+        GPIO.output(self.STBY_PIN, True)
+
         # action status
         success = True
 
@@ -143,6 +144,7 @@ class StraightDriveDist(object):
             del a_in2
             del b_in1
             del b_in2
+            GPIO.cleanup()
 
             self._result = self._feedback
 
