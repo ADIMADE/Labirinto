@@ -139,8 +139,8 @@ class StraightDrive(object):
                 self.bSpeed = 60
 
             # Turn on motors
-            a_in1.start(False)
-            a_in2.start(float(self.aSpeed))
+            a_in1.start(float(self.aSpeed))
+            a_in2.start(False)
             b_in1.start(float(self.bSpeed))
             b_in2.start(False)
 

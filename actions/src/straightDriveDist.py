@@ -111,7 +111,7 @@ class StraightDriveDist(object):
                 break
 
             # calculating effective distance and expected distance
-            error = self.encoderLeft.data - self.encoderRight.data
+            error = self.encoderLeft - self.encoderRight
 
             # pid controller for speed regulation
             self.aSpeed += (error * kp) + (sum_error * ki) + \
@@ -124,17 +124,19 @@ class StraightDriveDist(object):
                 self.aSpeed = 60
 
             # Turn on motors
-            a_in1.start(False)
-            a_in2.start(float(self.aSpeed))
-            b_in1.start(False)
-            b_in2.start(float(self.bSpeed))
+            a_in1.start(float(self.aSpeed))
+            a_in2.start(False)
+            b_in1.start(float(self.bSpeed))
+            b_in2.start(False)
 
             # saving of errors
             prev_error = error
             sum_error += error
 
             # Publish that there ist a wall
-            self._as.publish_feedback(int(self._feedback))
+            self._as.publish_feedback(self._feedback)
+
+            GPIO.cleanup()
 
         # When while condition is true, success function turn off all motors an publish success
         if success:
