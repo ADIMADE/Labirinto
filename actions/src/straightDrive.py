@@ -21,11 +21,11 @@ class StraightDrive(object):
         self._as.start()
 
         # RPi Pin setup
-        self.AIN1_PIN = 11
-        self.AIN2_PIN = 13
-        self.BIN1_PIN = 19
-        self.BIN2_PIN = 21
-        self.STBY_PIN = 7
+        self.AIN1_PIN = 29
+        self.AIN2_PIN = 31
+        self.BIN1_PIN = 21
+        self.BIN2_PIN = 19
+        self.STBY_PIN = 23
 
         # Select pin mode
         GPIO.setmode(GPIO.BOARD)
@@ -45,7 +45,6 @@ class StraightDrive(object):
         self.distRight = 0
         self.aSpeed = 70
         self.bSpeed = 70
-        self._feedback = True
 
         # Setup subscribers for the ultrasonic sensors
         self.subUltraLeft = rospy.Subscriber('/ultrasonic/Left', Float64, self.ultrasonic_left_callback)
@@ -97,8 +96,8 @@ class StraightDrive(object):
         GPIO.output(self.STBY_PIN, True)
 
         # publish info to the console for the user
-        rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.drive_until_passage,
-                                                                            self._feedback))
+        # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.drive_until_passage,
+        #                                                                    self._feedback))
         # calculated pid controller target
         target = (track_width / 2) - sensor_offset
 
@@ -159,6 +158,11 @@ class StraightDrive(object):
         if success:
             self.all_motors_off()
 
+            del a_in1
+            del a_in2
+            del b_in1
+            del b_in2
+
             # feedback: wall_present
             self._feedback = False
             # result: wall_not_present
@@ -169,7 +173,14 @@ class StraightDrive(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('straightDrive')
-    server = StraightDrive(rospy.get_name())
-    rospy.spin()
-    GPIO.cleanup()
+
+        try:
+                rospy.init_node('straightDrive')
+                server = StraightDrive(rospy.get_name())
+                rospy.spin()
+
+        except  rospy.ROSInterruptException:
+                pass
+
+        finally:
+                GPIO.cleanup()

@@ -1,8 +1,8 @@
 <launch>
 
   <!--ENCODER PINS-->
-  <param name="HSA1" value="29" />
-  <param name="HSB1" value="31" />
+  <param name="HSA1" value="11" />
+  <param name="HSB1" value="13" />
 
   <!--MPU AXIS REGISTER ADRESSES-->
   <param name="gyroZ" value="0x47" />
@@ -13,12 +13,12 @@
   <param name="accX" value="0x3B" />
 
   <!--ULTRASONIC PINS-->
-  <param name="ultrasonicFront_echo" type="int" value="32" />
-  <param name="ultrasonicFront_trig" type="int" value="26" />
-  <param name="ultrasonicRight_echo" type="int" value="18" />
-  <param name="ultrasonicRight_trig" type="int" value="16" />
-  <param name="ultrasonicLeft_echo" type="int" value="24" />
-  <param name="ultrasonicLeft_trig" type="int" value="22" />
+  <param name="ultrasonicFront_echo" type="int" value="18" />
+  <param name="ultrasonicFront_trig" type="int" value="16" />
+  <param name="ultrasonicRight_echo" type="int" value="40" />
+  <param name="ultrasonicRight_trig" type="int" value="38" />
+  <param name="ultrasonicLeft_echo" type="int" value="26" />
+  <param name="ultrasonicLeft_trig" type="int" value="24" />
 
   <!--STARTING NODES-->
   <node name="encoderNode" pkg="sensors" type="encoder.py" />

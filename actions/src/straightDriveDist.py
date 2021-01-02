@@ -21,11 +21,11 @@ class StraightDriveDist(object):
         self._as.start()
 
         # RPi Pin setup
-        self.AIN1_PIN = 11
-        self.AIN2_PIN = 13
-        self.BIN1_PIN = 19
-        self.BIN2_PIN = 21
-        self.STBY_PIN = 7
+        self.AIN1_PIN = 29
+        self.AIN2_PIN = 31
+        self.BIN1_PIN = 21
+        self.BIN2_PIN = 19
+        self.STBY_PIN = 23
 
         # Select pin mode
         GPIO.setmode(GPIO.BOARD)
@@ -46,7 +46,6 @@ class StraightDriveDist(object):
         self.encoderRight = 0
         self.aSpeed = 70
         self.bSpeed = 70
-        self._feedback = 0
 
         # Setup subscriber for the ultrasonic sensor
         self.subUltraFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.ultrasonic_front_callback)
@@ -111,7 +110,7 @@ class StraightDriveDist(object):
                 break
 
             # calculating effective distance and expected distance
-            error = self.encoderLeft - self.encoderRight
+            error = self.encoderLeft.data - self.encoderRight.data
 
             # pid controller for speed regulation
             self.aSpeed += (error * kp) + (sum_error * ki) + \
@@ -126,19 +125,25 @@ class StraightDriveDist(object):
             # Turn on motors
             a_in1.start(False)
             a_in2.start(float(self.aSpeed))
-            b_in1.start(float(self.bSpeed))
-            b_in2.start(False)
+            b_in1.start(False)
+            b_in2.start(float(self.bSpeed))
 
             # saving of errors
             prev_error = error
             sum_error += error
 
             # Publish that there ist a wall
-            self._as.publish_feedback(self._feedback)
+            self._as.publish_feedback(int(self._feedback))
 
         # When while condition is true, success function turn off all motors an publish success
         if success:
             self.all_motors_off()
+
+            del a_in1
+            del a_in2
+            del b_in1
+            del b_in2
+
             self._result = self._feedback
 
             rospy.loginfo('%s: Succeeded' % self._action_name)
@@ -146,6 +151,17 @@ class StraightDriveDist(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('straightDriveDist')
-    server = StraightDriveDist(rospy.get_name())
-    rospy.spin()
+
+        try:
+                 rospy.init_node('straightDriveDist')
+                 server = StraightDriveDist(rospy.get_name())
+                 rospy.spin()
+
+        except rospy.ROSInterruptExcpetion:
+                 pass
+
+        finally:
+                 GPIO.cleanup()
+
+
+

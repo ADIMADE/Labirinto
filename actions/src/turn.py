@@ -21,11 +21,11 @@ class Turn(object):
 		self._as.start()
 
 		# RPi Pin setup
-		self.AIN1_PIN = 11
-		self.AIN2_PIN = 13
-		self.BIN1_PIN = 19
-		self.BIN2_PIN = 21
-		self.STBY_PIN = 7
+		self.AIN1_PIN = 29
+		self.AIN2_PIN = 31
+		self.BIN1_PIN = 21
+		self.BIN2_PIN = 19
+		self.STBY_PIN = 23
 
 		GPIO.setmode(GPIO.BOARD)
 		# Setup GPIO's as output
@@ -110,6 +110,13 @@ class Turn(object):
 
 
 if __name__ == '__main__':
-	rospy.init_node('turn')
-	server = Turn(rospy.get_name())
-	rospy.spin()
+        try:
+	          rospy.init_node('turn')
+	          server = Turn(rospy.get_name())
+	          rospy.spin()
+
+        except rospy.ROSInterruptException:
+               pass
+
+        finally:
+                  GPIO.cleanup()

@@ -20,7 +20,7 @@ class Labirinto :
     # constructor of Class Labirinto
     def __init__(self):
 
-        self.trajectoryList = [[1, 1, 1]]
+        self.trajectoryList = [[True, True, True, 1]]
         self.noWalls = False
         self.decisionFILO = []
 
@@ -54,7 +54,6 @@ class Labirinto :
 
     # Callback function for Ultrasonic Suscribers
     def updateRange(self, data, args):
-        rospy.loginfo(data)
         if args == 'front':
             self.ultrasonicRangeFront.append(data.data)
             if len(self.ultrasonicRangeFront) > 5:
