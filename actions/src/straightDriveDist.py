@@ -34,7 +34,19 @@ class StraightDriveDist(object):
         self.aSpeed = 70
         self.bSpeed = 70
 
+        # Setup subscriber for the ultrasonic sensor
+        self.subUltraFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.ultrasonic_front_callback)
+
+        # Setup subscribers for encoder sensors
+        self.subEncoderLeft = rospy.Subscriber('/encoder/HSA1', Int64, self.encoder_left_callback)
+
+        self.subEncoderRight = rospy.Subscriber('/encoder/HSB1', Int64, self.encoder_right_callback)
+
+
         # Setup GPIO's as output
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
+
         GPIO.setup(self.AIN1_PIN, GPIO.OUT)
         GPIO.setup(self.AIN2_PIN, GPIO.OUT)
         GPIO.setup(self.BIN1_PIN, GPIO.OUT)
@@ -47,13 +59,6 @@ class StraightDriveDist(object):
         b_in1 = GPIO.PWM(self.BIN1_PIN, 100)
         b_in2 = GPIO.PWM(self.BIN2_PIN, 100)
 
-        # Setup subscriber for the ultrasonic sensor
-        self.subUltraFront = rospy.Subscriber('/ultrasonic/Front', Float64, self.ultrasonic_front_callback)
-
-        # Setup subscribers for encoder sensors
-        self.subEncoderLeft = rospy.Subscriber('/encoder/HSA1', Int64, self.encoder_left_callback)
-
-        self.subEncoderRight = rospy.Subscriber('/encoder/HSB1', Int64, self.encoder_right_callback)
 
     # Define a function to turn off all motors
     def all_motors_off(self):
@@ -75,9 +80,6 @@ class StraightDriveDist(object):
 
     # Execute function is automatically executed in action server
     def execute_cb(self, goal):
-
-        # Select pin mode
-        GPIO.setmode(GPIO.BOARD)
 
         # Set standby pin of motor controller high
         GPIO.output(self.STBY_PIN, True)
