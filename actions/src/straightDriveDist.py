@@ -21,11 +21,6 @@ class StraightDriveDist(object):
         self._as.start()
 
         # RPi Pin setup
-        self.AIN1_PIN = 29
-        self.AIN2_PIN = 31
-        self.BIN1_PIN = 21
-        self.BIN2_PIN = 19
-        self.STBY_PIN = 23
 
         # Initialize the variable for the sensors and motors
         self.distFront = 0
@@ -41,24 +36,6 @@ class StraightDriveDist(object):
         self.subEncoderLeft = rospy.Subscriber('/encoder/HSA1', Int64, self.encoder_left_callback)
 
         self.subEncoderRight = rospy.Subscriber('/encoder/HSB1', Int64, self.encoder_right_callback)
-
-
-        # Setup GPIO's as output
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setwarnings(False)
-
-        GPIO.setup(self.AIN1_PIN, GPIO.OUT)
-        GPIO.setup(self.AIN2_PIN, GPIO.OUT)
-        GPIO.setup(self.BIN1_PIN, GPIO.OUT)
-        GPIO.setup(self.BIN2_PIN, GPIO.OUT)
-        GPIO.setup(self.STBY_PIN, GPIO.OUT)
-
-        # turn all motors on 100 percent speed
-        a_in1 = GPIO.PWM(self.AIN1_PIN, 100)
-        a_in2 = GPIO.PWM(self.AIN2_PIN, 100)
-        b_in1 = GPIO.PWM(self.BIN1_PIN, 100)
-        b_in2 = GPIO.PWM(self.BIN2_PIN, 100)
-
 
     # Define a function to turn off all motors
     def all_motors_off(self):
@@ -96,9 +73,6 @@ class StraightDriveDist(object):
         prev_error = 0
         sum_error = 0
 
-        # Turn on standby pin of the motor driver chip
-        GPIO.output(self.STBY_PIN, True)
-
         # publish info to the console for the user
         # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
         #                                                                    self._feedback))
@@ -126,10 +100,10 @@ class StraightDriveDist(object):
                 self.aSpeed = 60
 
             # Turn on motors
-            self.a_in1.start(float(self.aSpeed))
-            self.a_in2.start(False)
-            self.b_in1.start(float(self.bSpeed))
-            self.b_in2.start(False)
+            a_in1.start(float(self.aSpeed))
+            a_in2.start(False)
+            b_in1.start(float(self.bSpeed))
+            b_in2.start(False)
 
             # saving of errors
             prev_error = error
@@ -161,6 +135,27 @@ if __name__ == '__main__':
         try:
                  rospy.init_node('straightDriveDist')
                  server = StraightDriveDist(rospy.get_name())
+                 # Setup GPIO's as output
+                 GPIO.setmode(GPIO.BOARD)
+                 GPIO.setwarnings(False)
+
+                 AIN1_PIN = 29
+                 AIN2_PIN = 31
+                 BIN1_PIN = 21
+                 BIN2_PIN = 19
+                 STBY_PIN = 23
+
+                 GPIO.setup(AIN1_PIN, GPIO.OUT)
+                 GPIO.setup(AIN2_PIN, GPIO.OUT)
+                 GPIO.setup(BIN1_PIN, GPIO.OUT)
+                 GPIO.setup(BIN2_PIN, GPIO.OUT)
+                 GPIO.setup(STBY_PIN, GPIO.OUT)
+
+                 # turn all motors on 100 percent speed
+                 a_in1 = GPIO.PWM(AIN1_PIN, 100)
+                 a_in2 = GPIO.PWM(AIN2_PIN, 100)
+                 b_in1 = GPIO.PWM(BIN1_PIN, 100)
+                 b_in2 = GPIO.PWM(BIN2_PIN, 100)
                  rospy.spin()
 
         except rospy.ROSInterruptExcpetion:
