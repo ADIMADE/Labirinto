@@ -31,6 +31,7 @@ class Ultrasonic():
 		rospy.loginfo(self.echoPin)
 
 		GPIO.setmode(GPIO.BOARD)
+		GPIO.setwarnings(False)
 		GPIO.setup(self.triggerPin, GPIO.OUT)
 		GPIO.setup(self.echoPin, GPIO.IN)
 

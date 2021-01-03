@@ -2,7 +2,7 @@
 bool drive_until_passage
 ---
 #result definition
-bool[] wall_not_present
+bool wall_not_present
 ---
 #feedback
-bool[] wall_present
+bool wall_present

@@ -11,8 +11,8 @@ from std_msgs.msg import Int64
 class StraightDriveDist(object):
     def __init__(self, name):
         # create messages that are used to publish feedback/result
-        self._feedback = actions.msg.straightDriveDistActionFeedback()
-        self._result = actions.msg.straightDriveDistActionResult()
+        self._feedback = actions.msg.straightDriveDistFeedback()
+        self._result = actions.msg.straightDriveDistResult()
 
         # create action server
         self._action_name = name
@@ -21,11 +21,11 @@ class StraightDriveDist(object):
         self._as.start()
 
         # RPi Pin setup
-        AIN1_PIN = 29
-        AIN2_PIN = 31
-        BIN1_PIN = 21
-        BIN2_PIN = 19
-        STBY_PIN = 23
+        self.AIN1_PIN = 29
+        self.AIN2_PIN = 31
+        self.BIN1_PIN = 21
+        self.BIN2_PIN = 19
+        self.STBY_PIN = 23
 
         # Initialize the variable for the sensors and motors
         self.distFront = 0
@@ -52,13 +52,13 @@ class StraightDriveDist(object):
 
     # When a new message appears from subscriber then the callback function is called
     def ultrasonic_front_callback(self, message):
-        self._feedback = message
+        self._feedback.distanceCurrent  = message.data
 
     def encoder_left_callback(self, message):
-        self.encoderLeft = message
+        self.encoderLeft = message.data
 
     def encoder_right_callback(self, message):
-        self.encoderRight = message
+        self.encoderRight = message.data
 
     # Execute function is automatically executed in action server
     def execute_cb(self, goal):
@@ -87,6 +87,7 @@ class StraightDriveDist(object):
 
         # variables: pid tuning factors
         kp = 0.2
+
         ki = 0.006
         kd = 0.002
 
@@ -98,7 +99,7 @@ class StraightDriveDist(object):
         # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
         #                                                                    self._feedback))
         # start executing the action
-        while self._feedback.data > goal.distance:
+        while self._feedback.distanceCurrent > goal.distance:
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -127,22 +128,29 @@ class StraightDriveDist(object):
             b_in2.start(False)
 
             # saving of errors
+
             prev_error = error
             sum_error += error
 
             # Publish that there ist a wall
             self._as.publish_feedback(self._feedback)
 
+        # When while condition is true, success function turn off all motors an publish success
+        if success:
+
             a_in1.stop()
             a_in2.stop()
             b_in1.stop()
             b_in2.stop()
 
-        # When while condition is true, success function turn off all motors an publish success
-        if success:
+            del a_in1
+            del a_in2
+            del b_in1
+            del b_in2
+
             self.all_motors_off()
 
-            self._result = self._feedback
+            self._result.distanceCompleted = self._feedback.distanceCurrent
 
             rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)

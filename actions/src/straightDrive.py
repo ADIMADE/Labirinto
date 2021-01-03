@@ -11,8 +11,8 @@ from std_msgs.msg import Float64
 class StraightDrive(object):
     def __init__(self, name):
         # create messages that are used to publish feedback/result
-        self._feedback = actions.msg.straightDriveActionFeedback()
-        self._result = actions.msg.straightDriveActionResult()
+        self._feedback = actions.msg.straightDriveFeedback()
+        self._result = actions.msg.straightDriveResult()
 
         # create action server
         self._action_name = name
@@ -58,6 +58,7 @@ class StraightDrive(object):
 
         # Select pin mode
         GPIO.setmode(GPIO.BOARD)
+        GPIO.setwarnings(False)
 
         # Setup GPIO's as output
         GPIO.setup(self.AIN1_PIN, GPIO.OUT)
@@ -115,7 +116,7 @@ class StraightDrive(object):
                 break
 
             # feedback: wall is present
-            self._feedback = True
+            self._feedback.wall_present = True
 
             # calculating effective distance and expected distance
             error_left = target - self.distLeft.data
@@ -158,6 +159,11 @@ class StraightDrive(object):
         if success:
             self.all_motors_off()
 
+            a_in1.stop()
+            a_in2.stop()
+            b_in1.stop()
+            b_in2.stop()
+
             del a_in1
             del a_in2
             del b_in1
@@ -165,11 +171,11 @@ class StraightDrive(object):
             GPIO.cleanup()
 
             # feedback: wall_present
-            self._feedback = False
+            self._feedback.wall_present = False
             # result: wall_not_present
-            self._result = True
+            self._result.wall_not_present = True
 
-            rospy.loginfo('%s: Succeeded' % self._action_name)
+            #rospy.loginfo('%s: Succeeded' % self._action_name)
             self._as.set_succeeded(self._result)
 
 

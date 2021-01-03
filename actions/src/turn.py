@@ -11,8 +11,8 @@ from std_msgs.msg import Float64
 class Turn(object):
 	def __init__(self, name):
 		# create messages that are used to publish feedback/result
-		self._feedback = actions.msg.turnActionFeedback()
-		self._result = actions.msg.turnActionResult()
+		self._feedback = actions.msg.turnFeedback()
+		self._result = actions.msg.turnResult()
 
 		# create action server
 		self._action_name = name
@@ -42,12 +42,14 @@ class Turn(object):
 
 	# When a new message appears from subscriber then the callback function is called
 	def mpu_callback(self, message):
-		self.degrPerSec = message
+		self.degrPerSec = message.data
 
 	# Execute function is automatically executed in action server
 	def execute_cb(self, goal):
+		rospy.loginfo("in callback")
 
 		GPIO.setmode(GPIO.BOARD)
+		GPIO.setwarnings(False)
 		# Setup GPIO's as output
 		GPIO.setup(self.AIN1_PIN, GPIO.OUT)
 		GPIO.setup(self.AIN2_PIN, GPIO.OUT)
@@ -59,7 +61,7 @@ class Turn(object):
 		GPIO.output(self.STBY_PIN, True)
 
 
-		self._feedback = 0
+		self._feedback.angle = 0
 		rate = 0.01
 		speed = 100
 		success = True
@@ -73,10 +75,11 @@ class Turn(object):
 		GPIO.output(self.STBY_PIN, True)
 
 		# publish info to the console for the user
-		rospy.loginfo('%s: Executing Turn, goal: %i, status: %i'% (self._action_name, goal.turn_angle, self._feedback))
+		#rospy.loginfo('%s: Executing Turn, goal: %i, status: %i'% (self._action_name, goal.turn_angle, self._feedback))
 
 		# start executing the action
-		while self._feedback > goal.turn_angle:
+		rospy.loginfo(goal.turn_angle)
+		while self._feedback.angle > goal.turn_angle:
 			# Function is active when a new request is made from action client
 			if self._as.is_preempt_requested():
 				rospy.loginfo('%s: Preempted' % self._action_name)
@@ -86,10 +89,11 @@ class Turn(object):
 				break
 
 			# Calculate the total driven angle
-			degree = self.degrPerSec.data * rate
-			self._feedback += degree
+			degree = self.degrPerSec * rate
+			self._feedback.angle += degree
 
-			rospy.loginfo(self._feedback)
+			rospy.loginfo(self._feedback.angle)
+			rospy.loginfo(degree)
 
 			# Turn on motors
 			a_in1.start(float(speed))
@@ -107,8 +111,17 @@ class Turn(object):
 		if success:
 			self.all_motors_off()
 
-			GPIO.cleanup()
-			self._result = self._feedback
+			a_in1.stop()
+			a_in2.stop()
+			b_in1.stop()
+			b_in2.stop()
+
+			del a_in1
+			del a_in2
+			del b_in1
+			del b_in2
+
+			self._result.turn_complete = self._feedback.angle
 			rospy.loginfo('%s: Succeeded' % self._action_name)
 			self._as.set_succeeded(self._result)
 

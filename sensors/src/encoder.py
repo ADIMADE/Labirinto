@@ -23,6 +23,7 @@ class Encoder():
 		rospy.loginfo(self.encoderPin)
 
 		GPIO.setmode(GPIO.BOARD)
+		GPIO.setwarnings(False)
 		GPIO.setup(self.encoderPin, GPIO.IN)
 
 		# Publisher and Suscriber

@@ -1,8 +1,8 @@
 #goal definition
-int32 distance
+float64 distance
 ---
 #result definition
-int32[] distanceCompleted
+float64 distanceCompleted
 ---
 #feedback
-int32[] distanceCurrent
+float64 distanceCurrent
