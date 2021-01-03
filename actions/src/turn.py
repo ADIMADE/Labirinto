@@ -95,10 +95,10 @@ class Turn(object):
 				rospy.loginfo(degree)
 
 				# Turn on motors
-				a_in1.start(float(speed))
-				a_in2.start(False)
-				b_in1.start(float(speed))
-				b_in2.start(False)
+				a_in1.start(False)
+				a_in2.start(float(speed))
+				b_in1.start(False)
+				b_in2.start(float(speed))
 
 				# Publish driven angle
 				self._as.publish_feedback(self._feedback)
@@ -123,10 +123,10 @@ class Turn(object):
 				rospy.loginfo(degree)
 
 				# Turn on motors
-				a_in1.start(False)
-				a_in2.start(float(speed))
-				b_in1.start(False)
-				b_in2.start(float(speed))
+				a_in1.start(float(speed))
+				a_in2.start(False)
+				b_in1.start(float(speed))
+				b_in2.start(False)
 
 				# Publish driven angle
 				self._as.publish_feedback(self._feedback)

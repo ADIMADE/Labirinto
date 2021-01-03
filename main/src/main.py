@@ -159,11 +159,13 @@ class Labirinto :
     # Method : Action calling and controlling
     def actionCalling(self, movement):
         if movement == 'forward':
+            time.sleep(2)
             # action forward with ultrasonic
-            goal = actions.msg.straightDriveDistGoal(distance = 20)
+            goal = actions.msg.straightDriveDistGoal(distance = 30)
             self.straightDriveDistClient.send_goal_and_wait(goal)
             rospy.loginfo("StraightDriveDist_Finish")
 
+            time.sleep(2)
             goal = actions.msg.straightDriveGoal(drive_until_passage = True)
             self.straightDriveClient.send_goal_and_wait(goal)
            #  while not self.straightDriveClient.wait_for_result():
@@ -171,11 +173,13 @@ class Labirinto :
                     #verify drived distance since the path detection
             rospy.loginfo("StraightDrive_Finish")
 
+            time.sleep(2)
             goal = actions.msg.straightDriveDistGoal(distance = 20)
             self.straightDriveDistClient.send_goal_and_wait(goal)
             rospy.loginfo("StraightDriveDist_Finish")
 
         elif movement == 'right':
+            time.sleep(3)
             # action turn right 90°
             goal = actions.msg.turnGoal(turn_angle = 90)
             self.turnClient.send_goal_and_wait(goal)
@@ -183,12 +187,14 @@ class Labirinto :
             # action forward with ultrasonic
             self.actionCalling('forward')
         elif movement == 'left':
+            time.sleep(3)
             # action turn left 90°
             goal = actions.msg.turnGoal(turn_angle = -90)
             self.turnClient.send_goal_and_wait(goal)
             # action forward with ultrasonic
             self.actionCalling('forward')
         elif movement == 'UTurn':
+            time.sleep(3)
             self.pubLed.publish('blinkFast')
             # action turn 180°
             goal = actions.msg.turnGoal(turn_angle = 180)

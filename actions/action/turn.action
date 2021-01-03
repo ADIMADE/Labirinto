@@ -1,8 +1,8 @@
 #goal definition
-int32 turn_angle
+float64 turn_angle
 ---
 #result definition
-int32 turn_complete
+float64 turn_complete
 ---
 #feedback
-int32 angle
+float64 angle
