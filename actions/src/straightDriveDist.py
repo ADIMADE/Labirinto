@@ -7,6 +7,8 @@ import actions.msg
 from std_msgs.msg import Float64
 from std_msgs.msg import Int64
 
+#Motor A is Right
+#Motor B is Left
 
 class StraightDriveDist(object):
     def __init__(self, name):
@@ -52,7 +54,7 @@ class StraightDriveDist(object):
 
     # When a new message appears from subscriber then the callback function is called
     def ultrasonic_front_callback(self, message):
-        self._feedback.distanceCurrent  = message.data
+        self.ultrasonicFront = message.data
 
     def encoder_left_callback(self, message):
         self.encoderLeft = message.data
@@ -95,11 +97,13 @@ class StraightDriveDist(object):
         prev_error = 0
         sum_error = 0
 
+        distanceMoved = self.encoderRight
+
         # publish info to the console for the user
         # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
         #                                                                    self._feedback))
         # start executing the action
-        while self._feedback.distanceCurrent > goal.distance:
+        while self.ultrasonicFront >  10 or (distanceMoved/280/21.35) < goal.distance :
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -109,7 +113,7 @@ class StraightDriveDist(object):
                 break
 
             # calculating effective distance and expected distance
-            error = self.encoderLeft - self.encoderRight
+            error = self.encoderRight - self.encoderLeft
 
             # pid controller for speed regulation
             self.aSpeed += (error * kp) + (sum_error * ki) + \
@@ -131,6 +135,9 @@ class StraightDriveDist(object):
 
             prev_error = error
             sum_error += error
+
+            TicksMoved = self.encoderLeft - distanceMoved
+            self._feedback.distanceCurrent = distanceMoved/280/21.35
 
             # Publish that there ist a wall
             self._as.publish_feedback(self._feedback)
