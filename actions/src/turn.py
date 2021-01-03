@@ -46,7 +46,6 @@ class Turn(object):
 
 	# Execute function is automatically executed in action server
 	def execute_cb(self, goal):
-		rospy.loginfo("in callback")
 
 		GPIO.setmode(GPIO.BOARD)
 		GPIO.setwarnings(False)
@@ -78,34 +77,62 @@ class Turn(object):
 		#rospy.loginfo('%s: Executing Turn, goal: %i, status: %i'% (self._action_name, goal.turn_angle, self._feedback))
 
 		# start executing the action
-		rospy.loginfo(goal.turn_angle)
-		while self._feedback.angle > goal.turn_angle:
-			# Function is active when a new request is made from action client
-			if self._as.is_preempt_requested():
-				rospy.loginfo('%s: Preempted' % self._action_name)
-				self._as.set_preempted()
-				success = False
-				self.all_motors_off()
-				break
+		if goal.turn_angle < 0:
+			while self._feedback.angle >= goal.turn_angle:
+				# Function is active when a new request is made from action client
+				if self._as.is_preempt_requested():
+					rospy.loginfo('%s: Preempted' % self._action_name)
+					self._as.set_preempted()
+					success = False
+					self.all_motors_off()
+					break
 
-			# Calculate the total driven angle
-			degree = self.degrPerSec * rate
-			self._feedback.angle += degree
+				# Calculate the total driven angle
+				degree = self.degrPerSec * rate
+				self._feedback.angle += degree
 
-			rospy.loginfo(self._feedback.angle)
-			rospy.loginfo(degree)
+				rospy.loginfo(self._feedback.angle)
+				rospy.loginfo(degree)
 
-			# Turn on motors
-			a_in1.start(float(speed))
-			a_in2.start(False)
-			b_in1.start(float(speed))
-			b_in2.start(False)
+				# Turn on motors
+				a_in1.start(float(speed))
+				a_in2.start(False)
+				b_in1.start(float(speed))
+				b_in2.start(False)
 
-			# Publish driven angle
-			self._as.publish_feedback(self._feedback)
+				# Publish driven angle
+				self._as.publish_feedback(self._feedback)
 
-			# Sleep in the same rate as the sampling rate of the mpu
-			time.sleep(rate)
+				# Sleep in the same rate as the sampling rate of the mpu
+				time.sleep(rate)
+		else : 
+			while self._feedback.angle <= goal.turn_angle:
+				# Function is active when a new request is made from action client
+				if self._as.is_preempt_requested():
+					rospy.loginfo('%s: Preempted' % self._action_name)
+					self._as.set_preempted()
+					success = False
+					self.all_motors_off()
+					break
+
+				# Calculate the total driven angle
+				degree = self.degrPerSec * rate
+				self._feedback.angle += degree
+
+				rospy.loginfo(self._feedback.angle)
+				rospy.loginfo(degree)
+
+				# Turn on motors
+				a_in1.start(False)
+				a_in2.start(float(speed))
+				b_in1.start(False)
+				b_in2.start(float(speed))
+
+				# Publish driven angle
+				self._as.publish_feedback(self._feedback)
+
+				# Sleep in the same rate as the sampling rate of the mpu
+				time.sleep(rate)
 
 		# When while condition is true, success function turn off all motors an publish success
 		if success:
@@ -124,6 +151,7 @@ class Turn(object):
 			self._result.turn_complete = self._feedback.angle
 			rospy.loginfo('%s: Succeeded' % self._action_name)
 			self._as.set_succeeded(self._result)
+
 
 
 if __name__ == '__main__':
