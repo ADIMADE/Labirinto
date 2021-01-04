@@ -4,6 +4,8 @@ import rospy
 import RPi.GPIO as GPIO
 import actionlib
 import actions.msg
+import math
+import time
 from std_msgs.msg import Float64
 from std_msgs.msg import Int64
 
@@ -88,7 +90,7 @@ class StraightDriveDist(object):
         success = True
 
         # variables: pid tuning factors
-        kp = 2
+        kp = 0.2
         ki = 0
         kd = 0
 
@@ -97,21 +99,41 @@ class StraightDriveDist(object):
         sum_error = 0
 
         # variables for distance calculation
+
+        start_time = time.time()
+        seconds = 0.5
+
+        while True:
+             current_time = time.time()
+             elapsed_time = current_time - start_time
+
+             a_in1.start(float(100))
+             a_in2.start(False)
+             b_in1.start(float(100))
+             b_in2.start(False)
+
+             if elapsed_time > seconds:
+                  break
+
         wheel_diameter = 6.8
+        wheel_scope = wheel_diameter * math.pi
         ticks_per_turn = 275
-        cm_per_tick = wheel_diameter / ticks_per_turn
 
-        ticks_goal = goal.distance / cm_per_tick
+        ticks_per_centimeter = ticks_per_turn / wheel_scope
 
-        ticks_current = self.encoderRight
+        ticks_goal = goal.distance * ticks_per_centimeter
+
+        ticks_initial = self.encoderRight
+
+        ticks_current = 0
 
         # publish info to the console for the user
         # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
         #                                                                    self._feedback))
         # start executing the action
-        rospy.loginfo("hallo")
+        rospy.loginfo(ticks_initial)
         rospy.loginfo(ticks_goal)
-        while ticks_current < 1000 :
+        while ticks_current < ticks_goal :
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -143,7 +165,11 @@ class StraightDriveDist(object):
             prev_error = error
             sum_error += error
 
-            self._feedback.distanceCurrent = ticks_current * cm_per_tick
+            ticks_current = self.encoderRight - ticks_initial
+
+            rospy.loginfo(ticks_current)
+
+            self._feedback.distanceCurrent = ticks_current / ticks_per_centimeter
 
             # Publish that there ist a wall
             self._as.publish_feedback(self._feedback)
