@@ -88,22 +88,30 @@ class StraightDriveDist(object):
         success = True
 
         # variables: pid tuning factors
-        kp = 0.2
-
-        ki = 0.006
-        kd = 0.002
+        kp = 2
+        ki = 0
+        kd = 0
 
         # variables: pid error memories
         prev_error = 0
         sum_error = 0
 
-        distanceMoved = self.encoderRight
+        # variables for distance calculation
+        wheel_diameter = 6.8
+        ticks_per_turn = 275
+        cm_per_tick = wheel_diameter / ticks_per_turn
+
+        ticks_goal = goal.distance / cm_per_tick
+
+        ticks_current = self.encoderRight
 
         # publish info to the console for the user
         # rospy.loginfo('%s: Executing straightDrive, goal: %i, status: %i'% (self._action_name, goal.distance,
         #                                                                    self._feedback))
         # start executing the action
-        while self.ultrasonicFront >  10 or (distanceMoved/280/21.35) < goal.distance :
+        rospy.loginfo("hallo")
+        rospy.loginfo(ticks_goal)
+        while ticks_current < 1000 :
             # Function is active when a new request is made from action client
             if self._as.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name)
@@ -116,8 +124,7 @@ class StraightDriveDist(object):
             error = self.encoderRight - self.encoderLeft
 
             # pid controller for speed regulation
-            self.aSpeed += (error * kp) + (sum_error * ki) + \
-                           (prev_error * kd)
+            self.aSpeed += (error * kp) + (sum_error * ki) + (prev_error * kd)
 
             # speed limitations
             if self.aSpeed > 100:
@@ -136,8 +143,7 @@ class StraightDriveDist(object):
             prev_error = error
             sum_error += error
 
-            TicksMoved = self.encoderLeft - distanceMoved
-            self._feedback.distanceCurrent = distanceMoved/280/21.35
+            self._feedback.distanceCurrent = ticks_current * cm_per_tick
 
             # Publish that there ist a wall
             self._as.publish_feedback(self._feedback)
@@ -175,6 +181,3 @@ if __name__ == '__main__':
 
         finally:
                  GPIO.cleanup()
-
-
-
